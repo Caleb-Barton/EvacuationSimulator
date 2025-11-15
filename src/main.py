@@ -6,6 +6,7 @@ from person import Person
 
 # Function to play the prisoner's dilemma game when there is a conflict
 def prisonersDilemma(person1, person2):
+    advancing_player = None
     # Right now this only checks if both people cooperate and chooses a random one between the two
     # Add the other prisoner's dilemma options later
     if person1.playGame() == "C" and person2.playGame() == "C":

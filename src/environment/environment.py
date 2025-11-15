@@ -1,8 +1,11 @@
+from person import Person
+
+
 class Environment:
     def __init__(self, filename):
         self.width = 0
         self.height = 0
-        self.grid = []  # 2D list of cell types
+        self.grid: list[list[str | Person]] = []  # 2D list of cell types
         self.spawn_points = []
         self.exits = []
         self.obstacles = []
@@ -25,11 +28,13 @@ class Environment:
                 parsed_lines.append(line)
 
         if not parsed_lines:
-            raise ValueError("Environment file is empty or contains only comments")
+            raise ValueError(
+                "Environment file is empty or contains only comments")
 
         self.height = len(parsed_lines)
         self.width = max(len(line) for line in parsed_lines)
-        self.grid = [[' ' for _ in range(self.width)] for _ in range(self.height)]
+        self.grid = [[' ' for _ in range(self.width)]
+                     for _ in range(self.height)]
 
         for y, line in enumerate(parsed_lines):
             for x, char in enumerate(line):
@@ -58,4 +63,3 @@ class Environment:
             ''.join(str(cell) for cell in row)
             for row in self.grid
         )
-
