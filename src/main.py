@@ -1,7 +1,8 @@
 import copy
 import random
 from environment import Environment
-from person import Person
+from person import Person, MovementStrategy
+import sys
 
 
 # Function to play the prisoner's dilemma game when there is a conflict
@@ -42,6 +43,7 @@ def move(env):
 
 # Function to loop through the grid moving people while there are still those who haven't reached the exit
 def gameLoop(env):
+    iteration = 0
     while any(isinstance(item, Person) for row in env.grid for item in row):
         # Find projected moves for each player
         for row in env.grid:
@@ -61,9 +63,16 @@ def gameLoop(env):
         env = move(env)
         print(env)
         print()
+        iteration += 1
+    print(f"All people have evacuated in {iteration} iterations.")
 
 
 def main():
+    if "--strategy=random" in sys.argv:
+        strategy = MovementStrategy.RANDOM
+    else:
+        strategy = MovementStrategy.STATIC_FIELD
+
     # This kickoff only works for env1
     # We should change the whole thing later but for now you can visualize each person as their own letter
     alphabet = ["A", "B", "C", "D", "E", "F"]
@@ -72,8 +81,13 @@ def main():
     for row in range(len(env1.grid)):
         for col in range(len(env1.grid[row])):
             if env1.grid[row][col] == "S":
-                env1.grid[row][col] = Person(col, row, alphabet[count])
+                env1.grid[row][col] = Person(
+                    col, row, alphabet[count], strategy=strategy)
                 count += 1
+    # print initial environment
+    print(env1)
+    print()
+
     gameLoop(env1)
 
 

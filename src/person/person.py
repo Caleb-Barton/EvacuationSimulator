@@ -1,32 +1,79 @@
 import random
+from environment import Environment
+from math import exp
+from sys import float_info
+from enum import Enum
+
+FAMILIARITY = 10
+
+
+class MovementStrategy(Enum):
+    RANDOM = 1
+    STATIC_FIELD = 2
+
+
+def find_open_adjacent_cells(x: int, y: int, env: Environment) -> list[tuple[int, int]]:
+    open_cells = []
+    directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    for dx, dy in directions:
+        new_x, new_y = x + dx, y + dy
+        if env.is_walkable(new_x, new_y):
+            open_cells.append((new_x, new_y))
+    return open_cells
+
+
+def calculate_move_weight(projected: tuple[int, int], env: Environment) -> float:
+    """
+    This is the numerator in equation 2 from the paper
+    """
+    projected_sf = env.static_field[projected[1]][projected[0]]
+    # work around finite max float value
+    if projected_sf >= float_info.max:
+        return float_info.max
+    return exp(FAMILIARITY * projected_sf)
 
 
 class Person:
-    def __init__(self, x, y, letter):
+    def __init__(self, x, y, letter, strategy=MovementStrategy.STATIC_FIELD):
         self.x = x
         self.y = y
         self.letter = letter
         self.projected_x = 0
         self.projected_y = 0
+        self.strategy = strategy
 
     # Function for person to decide where they want to move next
     def findProjectedMove(self, env):
-        # Right now people choose a random empty square (up, down, left, right) they want to move to
-        # Change this in the future to have them want to move based on an algorithm
-        possible_move_list = []
-        if env.is_walkable(self.x + 1, self.y):
-            possible_move_list.append((self.x + 1, self.y))
-        if env.is_walkable(self.x - 1, self.y):
-            possible_move_list.append((self.x - 1, self.y))
-        if env.is_walkable(self.x, self.y + 1):
-            possible_move_list.append((self.x, self.y + 1))
-        if env.is_walkable(self.x, self.y - 1):
-            possible_move_list.append((self.x, self.y - 1))
-        # If they can't move anywhere, stay still
-        if len(possible_move_list) == 0:
-            possible_move_list.append((self.x, self.y))
-        move_idx = random.randint(0, len(possible_move_list) - 1)
-        move = possible_move_list[move_idx]
+        if self.strategy == MovementStrategy.RANDOM:
+            self._findProjectedMoveRandom(env)
+        elif self.strategy == MovementStrategy.STATIC_FIELD:
+            self._findProjectedMoveStaticField(env)
+        else:
+            raise ValueError("Unknown movement strategy")
+
+    def _findProjectedMoveRandom(self, env):
+        open_cells = find_open_adjacent_cells(self.x, self.y, env)
+        if len(open_cells) == 0:
+            self.projected_x = self.x
+            self.projected_y = self.y
+            return
+        move = random.choice(open_cells)
+        self.projected_x = move[0]
+        self.projected_y = move[1]
+
+    def _findProjectedMoveStaticField(self, env):
+        open_cells = find_open_adjacent_cells(self.x, self.y, env)
+        if len(open_cells) == 0:
+            self.projected_x = self.x
+            self.projected_y = self.y
+            return
+
+        move_weights = [calculate_move_weight(
+            cell, env) for cell in open_cells]
+        total_weight = sum(move_weights)
+        # The denominator in equation 2 from the paper
+        probabilities = [weight / total_weight for weight in move_weights]
+        move = random.choices(open_cells, weights=probabilities, k=1)[0]
         self.projected_x = move[0]
         self.projected_y = move[1]
 
