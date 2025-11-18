@@ -62,7 +62,6 @@ def gameLoop(env):
         # Move each player
         env = move(env)
         print(env)
-        print()
         iteration += 1
     print(f"All people have evacuated in {iteration} iterations.")
 
@@ -86,7 +85,6 @@ def main():
                 count += 1
     # print initial environment
     print(env1)
-    print()
 
     gameLoop(env1)
 

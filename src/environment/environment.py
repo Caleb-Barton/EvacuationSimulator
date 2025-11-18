@@ -103,4 +103,4 @@ class Environment:
         return '\n'.join(
             ''.join(str(cell) for cell in row)
             for row in self.grid
-        )
+        ) + '\n'
