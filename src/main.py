@@ -9,20 +9,39 @@ def get_rand_char():
     return chr(int(random.random() * 26) + ord('a'))
 
 # Function to play the prisoner's dilemma game when there is a conflict
-def prisoners_dilemma(person1, person2):
-    advancing_player = None
-    # Right now this only checks if both people cooperate and chooses a random one between the two
-    # Add the other prisoner's dilemma options later
-    if person1.playGame() == "C" and person2.playGame() == "C":
-        advancing_player = random.randint(1, 2)
-    # If Player 1 gets to advance, remove Player 2's projected move so they stay still
-    if advancing_player == 1:
-        person2.projected_x = person2.x
-        person2.projected_y = person2.y
-    # If Player 2 gets to advance, remove Player 1's projected move so they stay still
+# We've assumed P = 2 (it was mathematically the easiest to implement )
+def prisoners_dilemma(person_list):
+    if len(person_list) < 2:
+        raise ValueError(
+            "prisoner dilemma was called with less than 2 people")
+    actions = []
+    collaborator_list = []
+    defector_list = []
+    for person in person_list:
+        actions.append(person.playGame())
+    for index, person in enumerate(person_list):
+        if actions[index]:
+            collaborator_list.append(person)
+        else:
+            defector_list.append(person)
+    winner = None
+    if len(defector_list) == 0:
+        # All collaborate! Choose a random collaborator to win
+        winner = random.choice(collaborator_list)
+        winner.win()
+    elif len(defector_list) == 1:
+        # Lone defector wins
+        winner = defector_list[0]
+        defector_list[0].win()
     else:
-        person1.projected_x = person1.x
-        person1.projected_y = person1.y
+        # competition between all defectors
+        winner = random.choice(defector_list)
+        if random.random() < 1/len(defector_list):
+            winner.win()
+        else:
+            winner.lose()
+    [person.lose() for person in collaborator_list if person != winner]
+    [person.lose() for person in defector_list if person != winner]
 
 # Replace spawn points with people objects
 def spawn_people(env, strategy=MovementStrategy.STATIC_FIELD, spawn_percent=1.0):
@@ -70,7 +89,7 @@ def game_loop(env):
                         for item2 in row2:
                             if isinstance(item2, Person):
                                 if item.projected_x == item2.projected_x and item.projected_y == item2.projected_y and item != item2:
-                                    prisoners_dilemma(item, item2)
+                                    prisoners_dilemma([item, item2])
         # Move each player
         env = move(env)
         print(env)

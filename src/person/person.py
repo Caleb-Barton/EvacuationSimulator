@@ -78,10 +78,17 @@ class Person:
         self.projected_y = move[1]
 
     # Function for person to choose what they will play in the prisoner's dilemma
+    # True means cooperate, False means defect
     def playGame(self):
-        # Right now the players only ever return "C" for cooperate
-        # Change this in the future to have them choose different options
-        return "C"
+        # return false 1/4 time
+        return random.random() < 0.75
+    
+    def win(self):
+        pass
+
+    def lose(self):
+        self.projected_x = self.x
+        self.projected_y = self.y
 
     def __str__(self):
         return self.letter
