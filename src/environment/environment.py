@@ -85,6 +85,17 @@ class Environment:
     def is_walkable(self, x, y):
         cell_type = self.get_cell(x, y)
         return cell_type in [' ', 'S', 'E']  # All these are walkable
+    
+    def get_people_nearby(self, x, y):
+        people = []
+        for mod_y in [-1, 0, 1]:
+            for mod_x in [-1, 0, 1]:
+                if abs(mod_x) + abs(mod_y) != 0:
+                    new_x, new_y = x + mod_x, y + mod_y
+                    cell = self.get_cell(new_x, new_y)
+                    if hasattr(cell, 'projected_x'):
+                        people.append(cell)
+        return people
 
     def find_closest_exit(self, x, y):
         """

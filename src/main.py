@@ -71,6 +71,15 @@ def move(env):
                     env_copy.escaped_people.append(current_person)
     return env_copy
 
+def identify_move_conflicts(env, x, y):
+    if not env.is_walkable(x, y):
+        return []
+    conflict_people = []
+    people_nearby = env.get_people_nearby(x, y)
+    for person in people_nearby:
+        if person.projected_x == x and person.projected_y == y:
+            conflict_people.append(person)
+    return conflict_people
 
 # Function to loop through the grid moving people while there are still those who haven't reached the exit
 def game_loop(env):
@@ -82,14 +91,11 @@ def game_loop(env):
                 if isinstance(item, Person):
                     item.findProjectedMove(env)
         # Play the prisoner's dilemma if any two people have the same projected moves
-        for row in env.grid:
-            for item in row:
-                if isinstance(item, Person):
-                    for row2 in env.grid:
-                        for item2 in row2:
-                            if isinstance(item2, Person):
-                                if item.projected_x == item2.projected_x and item.projected_y == item2.projected_y and item != item2:
-                                    prisoners_dilemma([item, item2])
+        for y in range(len(env.grid)):
+            for x in range(len(row)):
+                conflict_people = identify_move_conflicts(env, x, y)
+                if len(conflict_people) > 1:
+                    prisoners_dilemma(conflict_people)
         # Move each player
         env = move(env)
         print(env)
