@@ -48,6 +48,8 @@ def move(env):
                 # If they are not moving to an exit, move them in the environment
                 if not (env.grid[current_person.y][current_person.x] == "E"):
                     env_copy.grid[current_person.y][current_person.x] = current_person
+                else:
+                    env_copy.escaped_people.append(current_person)
     return env_copy
 
 
@@ -74,6 +76,9 @@ def game_loop(env):
         print(env)
         iteration += 1
     print(f"All people have evacuated in {iteration} iterations.")
+    print(f"Escaped people: ", end="")
+    for person in env.escaped_people:
+        print(f"{person.letter}", end=", ")
 
 
 def main():

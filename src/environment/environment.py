@@ -11,6 +11,7 @@ class Environment:
         self.exits: list[tuple[int, int]] = []
         self.obstacles: list[tuple[int, int]] = []
         self.static_field: list[list[float]] = []
+        self.escaped_people = []
 
         self._load_from_file(f'environment/{filename}.txt')
 
