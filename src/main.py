@@ -5,8 +5,11 @@ from person import Person, MovementStrategy
 import sys
 
 
+def get_rand_char():
+    return chr(int(random.random() * 26) + ord('a'))
+
 # Function to play the prisoner's dilemma game when there is a conflict
-def prisonersDilemma(person1, person2):
+def prisoners_dilemma(person1, person2):
     advancing_player = None
     # Right now this only checks if both people cooperate and chooses a random one between the two
     # Add the other prisoner's dilemma options later
@@ -20,6 +23,13 @@ def prisonersDilemma(person1, person2):
     else:
         person1.projected_x = person1.x
         person1.projected_y = person1.y
+
+# Replace spawn points with people objects
+def spawn_people(env, strategy=MovementStrategy.STATIC_FIELD, spawn_percent=1.0):
+    spawn_count = int(len(env.spawn_points) * spawn_percent)
+    selected_spawns = random.sample(env.spawn_points, spawn_count)
+    for x, y in selected_spawns:
+        env.grid[y][x] = Person(x, y, get_rand_char(), strategy)
 
 
 # Function to actually move each person once their desired move is chosen
@@ -42,7 +52,7 @@ def move(env):
 
 
 # Function to loop through the grid moving people while there are still those who haven't reached the exit
-def gameLoop(env):
+def game_loop(env):
     iteration = 0
     while any(isinstance(item, Person) for row in env.grid for item in row):
         # Find projected moves for each player
@@ -58,7 +68,7 @@ def gameLoop(env):
                         for item2 in row2:
                             if isinstance(item2, Person):
                                 if item.projected_x == item2.projected_x and item.projected_y == item2.projected_y and item != item2:
-                                    prisonersDilemma(item, item2)
+                                    prisoners_dilemma(item, item2)
         # Move each player
         env = move(env)
         print(env)
@@ -72,21 +82,13 @@ def main():
     else:
         strategy = MovementStrategy.STATIC_FIELD
 
-    # This kickoff only works for env1
-    # We should change the whole thing later but for now you can visualize each person as their own letter
-    alphabet = ["A", "B", "C", "D", "E", "F"]
-    count = 0
     env1 = Environment("env1")
-    for row in range(len(env1.grid)):
-        for col in range(len(env1.grid[row])):
-            if env1.grid[row][col] == "S":
-                env1.grid[row][col] = Person(
-                    col, row, alphabet[count], strategy=strategy)
-                count += 1
-    # print initial environment
+    spawn_people(env1, strategy, spawn_percent=0.75)
+
+    # print initial environment 
     print(env1)
 
-    gameLoop(env1)
+    game_loop(env1)
 
 
 if __name__ == "__main__":
