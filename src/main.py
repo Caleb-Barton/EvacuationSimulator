@@ -5,9 +5,6 @@ from person import Person, MovementStrategy
 import sys
 
 
-def get_rand_char():
-    return chr(int(random.random() * 26) + ord('a'))
-
 # Function to play the prisoner's dilemma game when there is a conflict
 # We've assumed P = 2 (it was mathematically the easiest to implement )
 
@@ -51,8 +48,12 @@ def prisoners_dilemma(person_list):
 def spawn_people(env, strategy=MovementStrategy.STATIC_FIELD, spawn_percent=1.0):
     spawn_count = int(len(env.spawn_points) * spawn_percent)
     selected_spawns = random.sample(env.spawn_points, spawn_count)
+    char_pool = [chr(i) for i in range(ord('a'), ord('z') + 1)]
+    if spawn_count > len(char_pool):
+        raise ValueError("Not enough unique characters to represent people")
     for x, y in selected_spawns:
-        env.grid[y][x] = Person(x, y, get_rand_char(), strategy)
+        person_char = char_pool.pop(0)
+        env.grid[y][x] = Person(x, y, person_char, strategy)
 
 
 # Function to actually move each person once their desired move is chosen
@@ -109,9 +110,8 @@ def game_loop(env):
         print(env)
         iteration += 1
     print(f"All people have evacuated in {iteration} iterations.")
-    print(f"Escaped people: ", end="")
-    for person in env.escaped_people:
-        print(f"{person.letter}", end=", ")
+    print(
+        f"Escaped people: {[person.letter for person in env.escaped_people]}")
 
 
 def main():
