@@ -33,6 +33,11 @@ def calculate_move_weight(projected: tuple[int, int], env: Environment) -> float
     return exp(FAMILIARITY * projected_sf)
 
 
+def hash_letter_to_color(letter: str) -> list[int]:
+    random.seed(ord(letter))
+    return [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)]
+
+
 class Person:
     def __init__(self, x, y, letter, strategy=MovementStrategy.STATIC_FIELD):
         self.x = x
@@ -41,6 +46,7 @@ class Person:
         self.projected_x = 0
         self.projected_y = 0
         self.strategy = strategy
+        self.color = hash_letter_to_color(letter)
 
     # Function for person to decide where they want to move next
     def findProjectedMove(self, env):
@@ -82,7 +88,7 @@ class Person:
     def playGame(self):
         # return false 1/4 time
         return random.random() < 0.75
-    
+
     def win(self):
         pass
 

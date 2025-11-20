@@ -3,6 +3,7 @@ import random
 from environment import Environment
 from person import Person, MovementStrategy
 import sys
+from visualization.plot_visualization import PlotVisualization, StepData
 
 
 # Function to play the prisoner's dilemma game when there is a conflict
@@ -93,6 +94,7 @@ def game_loop(env):
     Function to loop through the grid moving people while there are still those who haven't reached the exit
     """
     iteration = 0
+    visualization = PlotVisualization()
     while any(isinstance(item, Person) for row in env.grid for item in row):
         # Find projected moves for each player
         for row in env.grid:
@@ -108,10 +110,17 @@ def game_loop(env):
         # Move each player
         env = move(env)
         print(env)
+        visualization.record_step(
+            StepData(
+                grid_state=env.grid,
+                escaped_people=env.escaped_people
+            )
+        )
         iteration += 1
     print(f"All people have evacuated in {iteration} iterations.")
     print(
         f"Escaped people: {[person.letter for person in env.escaped_people]}")
+    visualization.create_plot()
 
 
 def main():
