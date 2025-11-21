@@ -35,7 +35,7 @@ class PlotVisualization:
             # Use vectorized operations for faster color assignment
             for y, row in enumerate(grid):
                 for x, cell in enumerate(row):
-                    if cell == ' ':
+                    if cell == ' ' or cell == 'S':
                         img[y, x] = [255, 255, 255]  # White for empty space
                     elif cell == '#':
                         img[y, x] = [0, 0, 0]        # Black for obstacles
