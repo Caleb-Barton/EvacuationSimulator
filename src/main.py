@@ -89,7 +89,7 @@ def identify_move_conflicts(env, x, y):
     return conflict_people
 
 
-def game_loop(env):
+def game_loop(env: Environment, create_visualization: bool):
     """
     Function to loop through the grid moving people while there are still those who haven't reached the exit
     """
@@ -120,7 +120,8 @@ def game_loop(env):
     print(f"All people have evacuated in {iteration} iterations.")
     print(
         f"Escaped people: {[person.letter for person in env.escaped_people]}")
-    visualization.create_plot()
+    if create_visualization:
+        visualization.create_plot()
 
 
 def main():
@@ -129,13 +130,18 @@ def main():
     else:
         strategy = MovementStrategy.STATIC_FIELD
 
-    env1 = Environment("env1")
-    spawn_people(env1, strategy, spawn_percent=0.75)
+    env_name = [arg for arg in sys.argv if arg.startswith("--env=")]
+    if env_name:
+        env_name = env_name[0].split("=")[1]
+        env = Environment(env_name)
+    else:
+        env = Environment("env1")
 
-    # print initial environment
-    print(env1)
+    create_visualization = "--visualization" in sys.argv
 
-    game_loop(env1)
+    spawn_people(env, strategy, spawn_percent=0.75)
+    print(env)
+    game_loop(env, create_visualization)
 
 
 if __name__ == "__main__":
