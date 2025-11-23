@@ -3,23 +3,16 @@ from matplotlib.animation import FFMpegWriter
 from matplotlib import animation
 import numpy as np
 from person import Person
+from .generic_visualization import GenericVisualization
 
 
-class StepData:
-    def __init__(self, grid_state: list[list[str | object]], escaped_people: list[str]):
-        self.grid_state = [row.copy() for row in grid_state]
-        self.escaped_people = escaped_people.copy()
+class VideoVisualization(GenericVisualization):
+    def __init__(self, filename: str, fps: int):
+        super().__init__()
+        self.filename = filename
+        self.fps = fps
 
-
-class PlotVisualization:
-
-    def __init__(self):
-        self.history: list[StepData] = []
-
-    def record_step(self, step_data: StepData):
-        self.history.append(step_data)
-
-    def create_plot(self):
+    def export(self):
         # create an animation of the evacuation process
         fig, ax = plt.subplots()
 
@@ -55,7 +48,8 @@ class PlotVisualization:
             ax.axis('off')
             return [image]
 
+        interval = 1000 / self.fps
         ani = animation.FuncAnimation(
-            fig, update, frames=len(precomputed_frames), interval=500)
-        ani.save('evacuation_simulation.mp4', writer=FFMpegWriter(fps=2))
+            fig, update, frames=len(precomputed_frames), interval=interval)
+        ani.save(self.filename, writer=FFMpegWriter(fps=self.fps))
         plt.close()

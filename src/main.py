@@ -3,7 +3,7 @@ import random
 from environment import Environment
 from person import Person, MovementStrategy
 import sys
-from visualization.plot_visualization import PlotVisualization, StepData
+from visualization import GenericVisualization, StepData, VideoVisualization, JsonVisualization
 
 
 # Function to play the prisoner's dilemma game when there is a conflict
@@ -63,8 +63,9 @@ def move(env):
     # Loop through each item in the environment and look for people
     for row in range(len(env.grid)):
         for col in range(len(env.grid[row])):
-            if type(env.grid[row][col]) is Person:
-                current_person = env.grid[row][col]
+            current_value = env.grid[row][col]
+            if isinstance(current_value, Person):
+                current_person = current_value
                 # Remove the current person from their current position
                 env_copy.grid[row][col] = " "
                 # Change the current person's x and y values to where they wanted to move
@@ -74,7 +75,7 @@ def move(env):
                 if not (env.grid[current_person.y][current_person.x] == "E"):
                     env_copy.grid[current_person.y][current_person.x] = current_person
                 else:
-                    env_copy.escaped_people.append(current_person)
+                    env_copy.escaped_people.append(current_person.letter)
     return env_copy
 
 
@@ -89,12 +90,11 @@ def identify_move_conflicts(env, x, y):
     return conflict_people
 
 
-def game_loop(env: Environment, create_visualization: bool):
+def game_loop(env: Environment, visualizers: list[GenericVisualization]):
     """
     Function to loop through the grid moving people while there are still those who haven't reached the exit
     """
     iteration = 0
-    visualization = PlotVisualization()
     while any(isinstance(item, Person) for row in env.grid for item in row):
         # Find projected moves for each player
         for row in env.grid:
@@ -110,38 +110,61 @@ def game_loop(env: Environment, create_visualization: bool):
         # Move each player
         env = move(env)
         print(env)
-        visualization.record_step(
+        [visualizer.record_step(
             StepData(
                 grid_state=env.grid,
                 escaped_people=env.escaped_people
-            )
-        )
+            )) for visualizer in visualizers]
         iteration += 1
     print(f"All people have evacuated in {iteration} iterations.")
     print(
-        f"Escaped people: {[person.letter for person in env.escaped_people]}")
-    if create_visualization:
-        visualization.create_plot()
+        f"Escaped people: {[letter for letter in env.escaped_people]}")
+
+    [visualizer.export() for visualizer in visualizers]
+
+
+def find_argument_value(arg_name: str, default: str) -> str:
+    args = [arg for arg in sys.argv if arg.startswith(f"--{arg_name}=")]
+    if args:
+        return args[0].split("=")[1]
+    return default
+
+
+def find_strategy_argument() -> MovementStrategy:
+    strategy_name = find_argument_value("strategy", "static")
+    if not strategy_name:
+        return MovementStrategy.STATIC_FIELD
+    strategy_name = strategy_name.lower()
+    if strategy_name == "random":
+        return MovementStrategy.RANDOM
+    else:
+        return MovementStrategy.STATIC_FIELD
 
 
 def main():
-    if "--strategy=random" in sys.argv:
-        strategy = MovementStrategy.RANDOM
-    else:
-        strategy = MovementStrategy.STATIC_FIELD
+    strategy = find_strategy_argument()
+    env_name = find_argument_value("env", "env1")
+    env = Environment(env_name)
 
-    env_name = [arg for arg in sys.argv if arg.startswith("--env=")]
-    if env_name:
-        env_name = env_name[0].split("=")[1]
-        env = Environment(env_name)
-    else:
-        env = Environment("env1")
-
-    create_visualization = "--visualization" in sys.argv
+    json_filename = find_argument_value("json", "")
+    video_filename = find_argument_value("video", "")
+    visualizers: list[GenericVisualization] = []
+    if video_filename:
+        fps_str = find_argument_value("fps", "2")
+        fps = int(fps_str) if fps_str else 2
+        visualizers.append(VideoVisualization(
+            filename=video_filename,
+            fps=fps
+        ))
+    if json_filename:
+        visualizers.append(JsonVisualization(
+            filename=json_filename,
+            environment_name=env_name,
+            strategy=strategy))
 
     spawn_people(env, strategy, spawn_percent=0.75)
     print(env)
-    game_loop(env, create_visualization)
+    game_loop(env=env, visualizers=visualizers)
 
 
 if __name__ == "__main__":

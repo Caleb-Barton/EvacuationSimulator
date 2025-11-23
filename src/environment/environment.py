@@ -11,7 +11,7 @@ class Environment:
         self.exits: list[tuple[int, int]] = []
         self.obstacles: list[tuple[int, int]] = []
         self.static_field: list[list[float]] = []
-        self.escaped_people = []
+        self.escaped_people: list[str] = []
 
         self._load_from_file(f'environment/{filename}.txt')
 
@@ -85,7 +85,7 @@ class Environment:
     def is_walkable(self, x, y):
         cell_type = self.get_cell(x, y)
         return cell_type in [' ', 'S', 'E']  # All these are walkable
-    
+
     def get_people_nearby(self, x, y):
         people = []
         for mod_y in [-1, 0, 1]:
