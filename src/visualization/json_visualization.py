@@ -2,6 +2,7 @@ from .generic_visualization import GenericVisualization, StepData
 import json
 from person import Person
 from person.person import MovementStrategy
+import os
 
 
 class JsonVisualization(GenericVisualization):
@@ -10,6 +11,7 @@ class JsonVisualization(GenericVisualization):
         self.filename = filename
         self.environment_name = environment_name
         self.strategy = strategy.name
+        os.makedirs(os.path.dirname(self.filename), exist_ok=True)
 
     def export(self):
         with open(self.filename, 'w') as f:

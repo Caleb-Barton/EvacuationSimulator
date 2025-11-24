@@ -151,4 +151,9 @@ def run_simulation(movement_strategy: MovementStrategy, env: Environment, visual
                  spawn_percent=spawn_percent, cooperate_percent=cooperate_percent)
     if verbose:
         print(env)
+    [visualizer.record_step(
+        StepData(
+            grid_state=env.grid,
+            escaped_people=env.escaped_people
+        )) for visualizer in visualizers]
     game_loop(env=env, visualizers=visualizers, verbose=verbose)

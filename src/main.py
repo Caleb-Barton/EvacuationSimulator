@@ -34,9 +34,11 @@ if __name__ == "__main__":
     if video_filename:
         fps_str = find_argument_value("fps", "2")
         fps = int(fps_str) if fps_str else 2
+        export_frames = "--frames" in sys.argv
         visualizers.append(VideoVisualization(
             filename=video_filename,
-            fps=fps
+            fps=fps,
+            export_frames=export_frames
         ))
     if json_filename:
         visualizers.append(JsonVisualization(
