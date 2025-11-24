@@ -38,21 +38,37 @@ def hash_letter_to_color(letter: str) -> list[int]:
     return [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)]
 
 
+class PersonStrategy(Enum):
+    COOPERATE = 1
+    DEFECT = 2
+
+
+class PersonGameState(Enum):
+    NOT_PLAYED = 1
+    WON = 2
+    LOST = 3
+
+
 class Person:
-    def __init__(self, x, y, letter, strategy=MovementStrategy.STATIC_FIELD):
+    def __init__(self, x: int, y: int, letter: str, strategy: PersonStrategy, movement_strategy: MovementStrategy):
         self.x = x
         self.y = y
         self.letter = letter
         self.projected_x = 0
         self.projected_y = 0
-        self.strategy = strategy
+        self.strategy = movement_strategy
         self.color = hash_letter_to_color(letter)
+        self.strategy = strategy
+        self.movement_strategy = movement_strategy
+        self.game_state = PersonGameState.NOT_PLAYED
 
     # Function for person to decide where they want to move next
+
     def findProjectedMove(self, env):
-        if self.strategy == MovementStrategy.RANDOM:
+        self.game_state = PersonGameState.NOT_PLAYED
+        if self.movement_strategy == MovementStrategy.RANDOM:
             self._findProjectedMoveRandom(env)
-        elif self.strategy == MovementStrategy.STATIC_FIELD:
+        elif self.movement_strategy == MovementStrategy.STATIC_FIELD:
             self._findProjectedMoveStaticField(env)
         else:
             raise ValueError("Unknown movement strategy")
@@ -86,13 +102,18 @@ class Person:
     # Function for person to choose what they will play in the prisoner's dilemma
     # True means cooperate, False means defect
     def playGame(self):
-        # return false 1/4 time
-        return random.random() < 0.75
+        if self.strategy == PersonStrategy.COOPERATE:
+            return True
+        elif self.strategy == PersonStrategy.DEFECT:
+            return False
+        else:
+            raise ValueError("Unknown person strategy")
 
     def win(self):
-        pass
+        self.game_state = PersonGameState.WON
 
     def lose(self):
+        self.game_state = PersonGameState.LOST
         self.projected_x = self.x
         self.projected_y = self.y
 

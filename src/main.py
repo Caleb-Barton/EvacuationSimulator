@@ -12,8 +12,8 @@ def find_argument_value(arg_name: str, default: str) -> str:
     return default
 
 
-def find_strategy_argument() -> MovementStrategy:
-    strategy_name = find_argument_value("strategy", "static")
+def find_movement_strategy_argument() -> MovementStrategy:
+    strategy_name = find_argument_value("movement", "static")
     if not strategy_name:
         return MovementStrategy.STATIC_FIELD
     strategy_name = strategy_name.lower()
@@ -24,7 +24,7 @@ def find_strategy_argument() -> MovementStrategy:
 
 
 if __name__ == "__main__":
-    strategy = find_strategy_argument()
+    movement_strategy = find_movement_strategy_argument()
     env_name = find_argument_value("env", "env1")
     env = Environment(env_name)
 
@@ -42,9 +42,12 @@ if __name__ == "__main__":
         visualizers.append(JsonVisualization(
             filename=json_filename,
             environment_name=env_name,
-            strategy=strategy))
+            strategy=movement_strategy))
 
     spawn_percent = float(find_argument_value("spawn_percent", "0.75"))
+    cooperate_percent = float(find_argument_value("cooperate_percent", "0.5"))
 
-    run_simulation(strategy=strategy, env=env,
-                   visualizers=visualizers, spawn_percent=spawn_percent, verbose=True)
+    run_simulation(movement_strategy=movement_strategy, env=env,
+                   visualizers=visualizers, spawn_percent=spawn_percent,
+                   cooperate_percent=cooperate_percent,
+                   verbose=True)

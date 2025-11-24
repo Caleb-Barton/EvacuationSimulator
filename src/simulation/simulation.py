@@ -1,11 +1,11 @@
 import copy
 import random
 from environment import Environment
-from person import Person, MovementStrategy
+from person import Person, MovementStrategy, PersonStrategy, PersonGameState
 from visualization import GenericVisualization, StepData
 
 
-def prisoners_dilemma(person_list):
+def prisoners_dilemma(person_list: list[Person]):
     """
     Function to play the prisoner's dilemma game when there is a conflict
     among multiple people trying to move to the same cell.
@@ -17,9 +17,9 @@ def prisoners_dilemma(person_list):
         raise ValueError(
             "prisoner dilemma was called with less than 2 people")
 
-    actions = []
-    collaborator_list = []
-    defector_list = []
+    actions: list[bool] = []
+    collaborator_list: list[Person] = []
+    defector_list: list[Person] = []
     for person in person_list:
         actions.append(person.playGame())
     for index, person in enumerate(person_list):
@@ -47,7 +47,7 @@ def prisoners_dilemma(person_list):
     [person.lose() for person in defector_list if person != winner]
 
 
-def spawn_people(env, strategy=MovementStrategy.STATIC_FIELD, spawn_percent=1.0):
+def spawn_people(env, cooperate_percent: float, movement_strategy=MovementStrategy.STATIC_FIELD, spawn_percent=1.0):
     """
     Function to spawn people in the environment at random spawn points.
     """
@@ -58,7 +58,12 @@ def spawn_people(env, strategy=MovementStrategy.STATIC_FIELD, spawn_percent=1.0)
         raise ValueError("Not enough unique characters to represent people")
     for x, y in selected_spawns:
         person_char = char_pool.pop(0)
-        env.grid[y][x] = Person(x, y, person_char, strategy)
+        if random.random() < cooperate_percent:
+            strategy = PersonStrategy.COOPERATE
+        else:
+            strategy = PersonStrategy.DEFECT
+        env.grid[y][x] = Person(x=x, y=y, letter=person_char,
+                                movement_strategy=movement_strategy, strategy=strategy)
 
 
 def move(env):
@@ -136,13 +141,14 @@ def game_loop(env: Environment, visualizers: list[GenericVisualization], verbose
     [visualizer.export() for visualizer in visualizers]
 
 
-def run_simulation(strategy: MovementStrategy, env: Environment, visualizers: list[GenericVisualization], spawn_percent: float, verbose=True):
+def run_simulation(movement_strategy: MovementStrategy, env: Environment, visualizers: list[GenericVisualization], spawn_percent: float, cooperate_percent: float, verbose=True):
     """
     Primary entry point to run the evacuation simulation.
     Outputs data via the provided visualizers.
     """
 
-    spawn_people(env, strategy, spawn_percent=spawn_percent)
+    spawn_people(env, movement_strategy=movement_strategy,
+                 spawn_percent=spawn_percent, cooperate_percent=cooperate_percent)
     if verbose:
         print(env)
     game_loop(env=env, visualizers=visualizers, verbose=verbose)
