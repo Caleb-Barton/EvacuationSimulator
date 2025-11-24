@@ -44,4 +44,7 @@ if __name__ == "__main__":
             environment_name=env_name,
             strategy=strategy))
 
-    run_simulation(strategy=strategy, env=env, visualizers=visualizers)
+    spawn_percent = float(find_argument_value("spawn_percent", "0.75"))
+
+    run_simulation(strategy=strategy, env=env,
+                   visualizers=visualizers, spawn_percent=spawn_percent, verbose=True)

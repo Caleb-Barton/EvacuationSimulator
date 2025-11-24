@@ -101,7 +101,7 @@ def identify_move_conflicts(env, x, y):
     return conflict_people
 
 
-def game_loop(env: Environment, visualizers: list[GenericVisualization]):
+def game_loop(env: Environment, visualizers: list[GenericVisualization], verbose: bool):
     """
     Function to loop through the grid moving people while there are still those who haven't reached the exit
     """
@@ -120,26 +120,29 @@ def game_loop(env: Environment, visualizers: list[GenericVisualization]):
                     prisoners_dilemma(conflict_people)
         # Move each player
         env = move(env)
-        print(env)
+        if verbose:
+            print(env)
         [visualizer.record_step(
             StepData(
                 grid_state=env.grid,
                 escaped_people=env.escaped_people
             )) for visualizer in visualizers]
         iteration += 1
-    print(f"All people have evacuated in {iteration} iterations.")
-    print(
-        f"Escaped people: {[letter for letter in env.escaped_people]}")
+    if verbose:
+        print(f"All people have evacuated in {iteration} iterations.")
+        print(
+            f"Escaped people: {[letter for letter in env.escaped_people]}")
 
     [visualizer.export() for visualizer in visualizers]
 
 
-def run_simulation(strategy: MovementStrategy, env: Environment, visualizers: list[GenericVisualization]):
+def run_simulation(strategy: MovementStrategy, env: Environment, visualizers: list[GenericVisualization], spawn_percent: float, verbose=True):
     """
     Primary entry point to run the evacuation simulation.
     Outputs data via the provided visualizers.
     """
 
-    spawn_people(env, strategy, spawn_percent=0.75)
-    print(env)
-    game_loop(env=env, visualizers=visualizers)
+    spawn_people(env, strategy, spawn_percent=spawn_percent)
+    if verbose:
+        print(env)
+    game_loop(env=env, visualizers=visualizers, verbose=verbose)
