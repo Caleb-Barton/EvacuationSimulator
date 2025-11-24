@@ -23,7 +23,32 @@ def find_movement_strategy_argument() -> MovementStrategy:
         return MovementStrategy.STATIC_FIELD
 
 
+def print_usage():
+    args = [
+        ["--env=env_name", "the environment to use. should be a .txt file in the environment/ directory"],
+        ["--movement=strategy_name",
+            'the movement strategy to use. options are "random" and "static"'],
+        ["--json=filename", "if provided, exports a JSON file with the evacuation data to the given filename"],
+        ["--video=filename",
+            "if provided, exports a video of the evacuation to the given filename"],
+        ["--fps=number", "the frames per second for the exported video"],
+        ["--frames", "if provided, exports individual frames as PNG files in addition to the video"],
+        ["--spawn_percent=number", "the percentage of people to spawn in the environment"],
+        ["--cooperate_percent=number",
+            "the percentage of people that will cooperate at the start of the simulation"],
+    ]
+
+    print(f"Usage: python {sys.argv[0]} [options]")
+    print("Options:")
+    for arg, desc in args:
+        print(f"  {arg.ljust(26)} {desc}")
+
+
 if __name__ == "__main__":
+    if "--help" in sys.argv or "-h" in sys.argv:
+        print_usage()
+        sys.exit(0)
+
     movement_strategy = find_movement_strategy_argument()
     env_name = find_argument_value("env", "env1")
     env = Environment(env_name)
