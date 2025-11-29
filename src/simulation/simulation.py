@@ -38,11 +38,9 @@ def prisoners_dilemma(person_list: list[Person]):
         defector_list[0].win()
     else:
         # competition between all defectors
-        winner = random.choice(defector_list)
         if random.random() < 1/len(defector_list):
+            winner = random.choice(defector_list)
             winner.win()
-        else:
-            winner.lose(len(person_list), len(collaborator_list))
     [person.lose(len(person_list), len(collaborator_list)) for person in collaborator_list if person != winner]
     [person.lose(len(person_list), len(collaborator_list)) for person in defector_list if person != winner]
 
