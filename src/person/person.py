@@ -1,3 +1,4 @@
+import math
 import random
 from environment import Environment
 from math import exp
@@ -12,9 +13,12 @@ class MovementStrategy(Enum):
     STATIC_FIELD = 2
 
 
-def find_open_adjacent_cells(x: int, y: int, env: Environment) -> list[tuple[int, int]]:
+def find_open_adjacent_cells(x: int, y: int, env: Environment, diagonal) -> list[tuple[int, int]]:
     open_cells = []
-    directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    if diagonal:
+        directions = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, -1), (-1, 1)]
+    else:
+        directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
     for dx, dy in directions:
         new_x, new_y = x + dx, y + dy
         if env.is_walkable(new_x, new_y):
@@ -50,7 +54,7 @@ class PersonGameState(Enum):
 
 
 class Person:
-    def __init__(self, x: int, y: int, letter: str, strategy: PersonStrategy, movement_strategy: MovementStrategy):
+    def __init__(self, x: int, y: int, letter: str, strategy: PersonStrategy, movement_strategy: MovementStrategy, diagonal):
         self.x = x
         self.y = y
         self.letter = letter
@@ -61,6 +65,7 @@ class Person:
         self.strategy = strategy
         self.movement_strategy = movement_strategy
         self.game_state = PersonGameState.NOT_PLAYED
+        self.diagonal = diagonal
 
     # Function for person to decide where they want to move next
 
@@ -74,7 +79,7 @@ class Person:
             raise ValueError("Unknown movement strategy")
 
     def _findProjectedMoveRandom(self, env):
-        open_cells = find_open_adjacent_cells(self.x, self.y, env)
+        open_cells = find_open_adjacent_cells(self.x, self.y, env, self.diagonal)
         if len(open_cells) == 0:
             self.projected_x = self.x
             self.projected_y = self.y
@@ -84,7 +89,7 @@ class Person:
         self.projected_y = move[1]
 
     def _findProjectedMoveStaticField(self, env):
-        open_cells = find_open_adjacent_cells(self.x, self.y, env)
+        open_cells = find_open_adjacent_cells(self.x, self.y, env, self.diagonal)
         if len(open_cells) == 0:
             self.projected_x = self.x
             self.projected_y = self.y
@@ -92,6 +97,8 @@ class Person:
 
         move_weights = [calculate_move_weight(
             cell, env) for cell in open_cells]
+        max_scaled = max(move_weights)
+        move_weights = [exp(s - max_scaled) for s in move_weights]
         total_weight = sum(move_weights)
         # The denominator in equation 2 from the paper
         probabilities = [weight / total_weight for weight in move_weights]

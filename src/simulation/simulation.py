@@ -47,7 +47,7 @@ def prisoners_dilemma(person_list: list[Person]):
     [person.lose() for person in defector_list if person != winner]
 
 
-def spawn_people(env, cooperate_percent: float, movement_strategy=MovementStrategy.STATIC_FIELD, spawn_percent=1.0):
+def spawn_people(env, diagonal: bool, cooperate_percent: float, movement_strategy=MovementStrategy.STATIC_FIELD, spawn_percent=1.0):
     """
     Function to spawn people in the environment at random spawn points.
     """
@@ -63,7 +63,7 @@ def spawn_people(env, cooperate_percent: float, movement_strategy=MovementStrate
         else:
             strategy = PersonStrategy.DEFECT
         env.grid[y][x] = Person(x=x, y=y, letter=person_char,
-                                movement_strategy=movement_strategy, strategy=strategy)
+                                movement_strategy=movement_strategy, strategy=strategy, diagonal=diagonal)
 
 
 def move(env):
@@ -138,17 +138,18 @@ def game_loop(env: Environment, visualizers: list[GenericVisualization], verbose
         print(
             f"Escaped people: {[letter for letter in env.escaped_people]}")
 
-    [visualizer.export() for visualizer in visualizers]
+    [visualizer.export(verbose) for visualizer in visualizers]
 
 
-def run_simulation(movement_strategy: MovementStrategy, env: Environment, visualizers: list[GenericVisualization], spawn_percent: float, cooperate_percent: float, verbose=True):
+def run_simulation(movement_strategy: MovementStrategy, env: Environment, visualizers: list[GenericVisualization], spawn_percent: float, cooperate_percent: float, diagonal: bool, verbose=True):
     """
     Primary entry point to run the evacuation simulation.
     Outputs data via the provided visualizers.
     """
 
     spawn_people(env, movement_strategy=movement_strategy,
-                 spawn_percent=spawn_percent, cooperate_percent=cooperate_percent)
+                 spawn_percent=spawn_percent, cooperate_percent=cooperate_percent,
+                 diagonal=diagonal)
     if verbose:
         print(env)
     [visualizer.record_step(

@@ -55,7 +55,7 @@ class VideoVisualization(GenericVisualization):
             escaped_count=escaped_count
         ))
 
-    def export(self):
+    def export(self, verbose):
         # create an animation of the evacuation process
         fig, ax = plt.subplots()
 
@@ -91,3 +91,4 @@ class VideoVisualization(GenericVisualization):
             fig, update, frames=len(self.frame_data), interval=interval)
         ani.save(self.filename, writer=FFMpegWriter(fps=self.fps))
         plt.close()
+        print("Saved evacuation video to " + self.filename)

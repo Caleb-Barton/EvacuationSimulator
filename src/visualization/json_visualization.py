@@ -13,7 +13,7 @@ class JsonVisualization(GenericVisualization):
         self.strategy = strategy.name
         os.makedirs(os.path.dirname(self.filename), exist_ok=True)
 
-    def export(self):
+    def export(self, verbose):
         with open(self.filename, 'w') as f:
             json.dump({
                 "environment": self.environment_name,
@@ -21,6 +21,7 @@ class JsonVisualization(GenericVisualization):
                 "strategy": self.strategy,
                 'escape_time_history': self.get_escape_time_history()
             }, f, indent=4)
+        print("Saved evacuation data to " + self.filename)
 
     def get_escape_time_history(self) -> list[int]:
         return [len(h.escaped_people) for h in self.history]
