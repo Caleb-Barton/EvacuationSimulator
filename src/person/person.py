@@ -112,10 +112,40 @@ class Person:
     def win(self):
         self.game_state = PersonGameState.WON
 
-    def lose(self):
+    def lose(self, num_conflicts, num_cooperators):
         self.game_state = PersonGameState.LOST
         self.projected_x = self.x
         self.projected_y = self.y
+
+        # Calculate expected payoff for current strategy and the opposite strategy
+        current_strat_payoff = 0.0
+        opposite_strat_payoff = 0.0
+        if num_conflicts == num_cooperators:
+            if self.strategy == PersonStrategy.COOPERATE:
+                current_strat_payoff = 1/num_cooperators
+                opposite_strat_payoff = 1.0
+            elif self.strategy == PersonStrategy.DEFECT:
+                current_strat_payoff = 1.0
+                opposite_strat_payoff = 1/num_cooperators
+        elif num_conflicts - num_cooperators > 1:
+            if self.strategy == PersonStrategy.COOPERATE:
+                current_strat_payoff = 0.0
+                opposite_strat_payoff = 1/((num_conflicts - num_cooperators) ** 2)
+            if self.strategy == PersonStrategy.DEFECT:
+                current_strat_payoff = 1/((num_conflicts - num_cooperators) ** 2)
+                opposite_strat_payoff = 0.0
+        # Calculate probability of changing strategy
+        # TODO: Might want to add a command line argument to change inertia value
+        inertia = 2
+        current_strat_payoff = inertia * current_strat_payoff
+        probability = 1/(1 + exp((current_strat_payoff - opposite_strat_payoff)/0.1))
+        # Change strat if greater than threshold
+        # TODO: I'm not sure if the paper specifies a threshold. We may have to change this
+        if probability >= 0.5:
+            if self.strategy == PersonStrategy.COOPERATE:
+                self.strategy = PersonStrategy.DEFECT
+            elif self.strategy == PersonStrategy.DEFECT:
+                self.strategy = PersonStrategy.COOPERATE
 
     def __str__(self):
         return self.letter

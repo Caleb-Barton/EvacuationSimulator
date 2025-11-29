@@ -42,9 +42,9 @@ def prisoners_dilemma(person_list: list[Person]):
         if random.random() < 1/len(defector_list):
             winner.win()
         else:
-            winner.lose()
-    [person.lose() for person in collaborator_list if person != winner]
-    [person.lose() for person in defector_list if person != winner]
+            winner.lose(len(person_list), len(collaborator_list))
+    [person.lose(len(person_list), len(collaborator_list)) for person in collaborator_list if person != winner]
+    [person.lose(len(person_list), len(collaborator_list)) for person in defector_list if person != winner]
 
 
 def spawn_people(env, cooperate_percent: float, movement_strategy=MovementStrategy.STATIC_FIELD, spawn_percent=1.0):
