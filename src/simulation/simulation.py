@@ -138,7 +138,7 @@ def game_loop(env: Environment, visualizers: list[GenericVisualization], verbose
         print(
             f"Escaped people: {[letter for letter in env.escaped_people]}")
 
-    [visualizer.export() for visualizer in visualizers]
+    [visualizer.export(verbose) for visualizer in visualizers]
 
 
 def run_simulation(movement_strategy: MovementStrategy, env: Environment, visualizers: list[GenericVisualization], spawn_percent: float, cooperate_percent: float, verbose=True):

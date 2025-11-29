@@ -16,7 +16,7 @@ class GenericVisualization(ABC):
         self.history.append(step_data)
 
     @abstractmethod
-    def export(self):
+    def export(self, verbose):
         """
         Abstract method to create a plot or animation of the evacuation process.
         Must be implemented by subclasses.

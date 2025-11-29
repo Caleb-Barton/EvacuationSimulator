@@ -1,3 +1,4 @@
+import math
 import random
 from environment import Environment
 from math import exp
@@ -14,7 +15,7 @@ class MovementStrategy(Enum):
 
 def find_open_adjacent_cells(x: int, y: int, env: Environment) -> list[tuple[int, int]]:
     open_cells = []
-    directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    directions = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, -1), (-1, 1)]
     for dx, dy in directions:
         new_x, new_y = x + dx, y + dy
         if env.is_walkable(new_x, new_y):
@@ -92,6 +93,8 @@ class Person:
 
         move_weights = [calculate_move_weight(
             cell, env) for cell in open_cells]
+        max_scaled = max(move_weights)
+        move_weights = [exp(s - max_scaled) for s in move_weights]
         total_weight = sum(move_weights)
         # The denominator in equation 2 from the paper
         probabilities = [weight / total_weight for weight in move_weights]
