@@ -6,6 +6,7 @@ from sys import float_info
 from enum import Enum
 
 FAMILIARITY = 10
+beta = 0.0
 
 
 class MovementStrategy(Enum):
@@ -22,8 +23,7 @@ def find_open_adjacent_cells(x: int, y: int, env: Environment) -> list[tuple[int
             open_cells.append((new_x, new_y))
     return open_cells
 
-
-def calculate_move_weight(projected: tuple[int, int], env: Environment) -> float:
+def calculate_move_weight(projected: tuple[int, int], momentum_bonus: float, env: Environment) -> float:
     """
     This is the numerator in equation 2 from the paper
     """
@@ -31,8 +31,26 @@ def calculate_move_weight(projected: tuple[int, int], env: Environment) -> float
     # work around finite max float value
     if projected_sf >= float_info.max:
         return float_info.max
-    return exp(FAMILIARITY * projected_sf)
+    return exp(FAMILIARITY * projected_sf + beta * momentum_bonus)
 
+def calculate_momentum_bonus(projected: tuple[int, int], momentum: tuple[int, int]) -> float:
+    dx, dy = projected
+    mx, my = momentum
+
+    if mx == 0 and my == 0:
+        return 0.0
+
+    dot = mx*dx + my*dy
+    mag_prev = math.sqrt(mx*mx + my*my)
+    mag_move = math.sqrt(dx*dx + dy*dy)
+
+    if mag_prev == 0 or mag_move == 0:
+        return 0.0
+
+    cos_sim = dot / (mag_prev * mag_move)
+
+    # Map cos_sim [-1..1] → bonus [0..4]
+    return (cos_sim + 1) / 2 * 4
 
 def hash_letter_to_color(letter: str) -> list[int]:
     random.seed(ord(letter))
@@ -62,6 +80,7 @@ class Person:
         self.strategy = strategy
         self.movement_strategy = movement_strategy
         self.game_state = PersonGameState.NOT_PLAYED
+        self.momentum = (0, 0)
 
     # Function for person to decide where they want to move next
 
@@ -84,6 +103,12 @@ class Person:
         self.projected_x = move[0]
         self.projected_y = move[1]
 
+    def calculate_momentum_and_weight(self, projected: tuple[int, int], env: Environment):
+        dx = projected[0] - self.x
+        dy = projected[1] - self.y
+        momentum_bonus = calculate_momentum_bonus((dx, dy), self.momentum)
+        return calculate_move_weight((self.projected_x, self.projected_y), momentum_bonus, env)
+
     def _findProjectedMoveStaticField(self, env):
         open_cells = find_open_adjacent_cells(self.x, self.y, env)
         if len(open_cells) == 0:
@@ -91,8 +116,7 @@ class Person:
             self.projected_y = self.y
             return
 
-        move_weights = [calculate_move_weight(
-            cell, env) for cell in open_cells]
+        move_weights = [self.calculate_momentum_and_weight(cell, env) for cell in open_cells]
         max_scaled = max(move_weights)
         move_weights = [exp(s - max_scaled) for s in move_weights]
         total_weight = sum(move_weights)
@@ -101,6 +125,8 @@ class Person:
         move = random.choices(open_cells, weights=probabilities, k=1)[0]
         self.projected_x = move[0]
         self.projected_y = move[1]
+        self.momentum = (self.projected_x - self.x,
+                         self.projected_y - self.y)
 
     # Function for person to choose what they will play in the prisoner's dilemma
     # True means cooperate, False means defect
@@ -119,6 +145,7 @@ class Person:
         self.game_state = PersonGameState.LOST
         self.projected_x = self.x
         self.projected_y = self.y
+        self.momentum = (0, 0)
 
         # Calculate expected payoff for current strategy and the opposite strategy
         current_strat_payoff = 0.0
