@@ -34,8 +34,8 @@ def calculate_move_weight(projected: tuple[int, int], env: Environment) -> float
     return exp(FAMILIARITY * projected_sf)
 
 
-def hash_letter_to_color(letter: str) -> list[int]:
-    random.seed(ord(letter))
+def id_to_color(id_num: int) -> list[int]:
+    random.seed(id_num)
     return [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)]
 
 
@@ -51,14 +51,14 @@ class PersonGameState(Enum):
 
 
 class Person:
-    def __init__(self, x: int, y: int, letter: str, strategy: PersonStrategy, movement_strategy: MovementStrategy):
+    def __init__(self, x: int, y: int, id_num: int, strategy: PersonStrategy, movement_strategy: MovementStrategy):
         self.x = x
         self.y = y
-        self.letter = letter
+        self.id_num = id_num
         self.projected_x = 0
         self.projected_y = 0
         self.strategy = movement_strategy
-        self.color = hash_letter_to_color(letter)
+        self.color = id_to_color(id_num)
         self.strategy = strategy
         self.movement_strategy = movement_strategy
         self.game_state = PersonGameState.NOT_PLAYED
@@ -151,4 +151,5 @@ class Person:
                 self.strategy = PersonStrategy.COOPERATE
 
     def __str__(self):
-        return self.letter
+        char_num = self.id_num % 25
+        return chr(ord('a') + char_num)

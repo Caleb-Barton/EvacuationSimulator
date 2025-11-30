@@ -54,13 +54,15 @@ def spawn_people(env, cooperate_percent: float, movement_strategy=MovementStrate
     char_pool = [chr(i) for i in range(ord('a'), ord('z') + 1)]
     if spawn_count > len(char_pool):
         raise ValueError("Not enough unique characters to represent people")
+    count = 0
     for x, y in selected_spawns:
-        person_char = char_pool.pop(0)
+        count += 1
+        person_char = count
         if random.random() < cooperate_percent:
             strategy = PersonStrategy.COOPERATE
         else:
             strategy = PersonStrategy.DEFECT
-        env.grid[y][x] = Person(x=x, y=y, letter=person_char,
+        env.grid[y][x] = Person(x=x, y=y, id_num=person_char,
                                 movement_strategy=movement_strategy, strategy=strategy)
 
 
@@ -85,7 +87,7 @@ def move(env):
                 if not (env.grid[current_person.y][current_person.x] == "E"):
                     env_copy.grid[current_person.y][current_person.x] = current_person
                 else:
-                    env_copy.escaped_people.append(current_person.letter)
+                    env_copy.escaped_people.append(current_person.id_num)
     return env_copy
 
 
@@ -123,8 +125,6 @@ def game_loop(env: Environment, visualizers: list[GenericVisualization], verbose
                     prisoners_dilemma(conflict_people)
         # Move each player
         env = move(env)
-        if verbose:
-            print(env)
         [visualizer.record_step(
             StepData(
                 grid_state=env.grid,
@@ -134,7 +134,7 @@ def game_loop(env: Environment, visualizers: list[GenericVisualization], verbose
     if verbose:
         print(f"All people have evacuated in {iteration} iterations.")
         print(
-            f"Escaped people: {[letter for letter in env.escaped_people]}")
+            f"Escaped people: {[id_num for id_num in env.escaped_people]}")
 
     [visualizer.export(verbose) for visualizer in visualizers]
 
@@ -147,8 +147,6 @@ def run_simulation(movement_strategy: MovementStrategy, env: Environment, visual
 
     spawn_people(env, movement_strategy=movement_strategy,
                  spawn_percent=spawn_percent, cooperate_percent=cooperate_percent)
-    if verbose:
-        print(env)
     [visualizer.record_step(
         StepData(
             grid_state=env.grid,
