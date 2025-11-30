@@ -5,9 +5,8 @@ from math import exp
 from sys import float_info
 from enum import Enum
 
-FAMILIARITY = 10
-beta = 0.0
-
+FAMILIARITY = 20
+beta = 2
 
 class MovementStrategy(Enum):
     RANDOM = 1
@@ -31,10 +30,11 @@ def calculate_move_weight(projected: tuple[int, int], momentum_bonus: float, env
     # work around finite max float value
     if projected_sf >= float_info.max:
         return float_info.max
-    return exp(FAMILIARITY * projected_sf + beta * momentum_bonus)
+    print(f"F * Projected SF: {FAMILIARITY * projected_sf}, Momentum Bonus: {beta * momentum_bonus}")
+    return exp(FAMILIARITY * projected_sf * (1 + momentum_bonus))
 
-def calculate_momentum_bonus(projected: tuple[int, int], momentum: tuple[int, int]) -> float:
-    dx, dy = projected
+def calculate_momentum_bonus(move_vector: tuple[int, int], momentum: tuple[int, int]) -> float:
+    dx, dy = move_vector
     mx, my = momentum
 
     if mx == 0 and my == 0:
@@ -103,11 +103,11 @@ class Person:
         self.projected_x = move[0]
         self.projected_y = move[1]
 
-    def calculate_momentum_and_weight(self, projected: tuple[int, int], env: Environment):
+    def calculate_momentum_bonus_and_weight(self, projected: tuple[int, int], env: Environment):
         dx = projected[0] - self.x
         dy = projected[1] - self.y
         momentum_bonus = calculate_momentum_bonus((dx, dy), self.momentum)
-        return calculate_move_weight((self.projected_x, self.projected_y), momentum_bonus, env)
+        return calculate_move_weight(projected, momentum_bonus, env)
 
     def _findProjectedMoveStaticField(self, env):
         open_cells = find_open_adjacent_cells(self.x, self.y, env)
@@ -116,9 +116,9 @@ class Person:
             self.projected_y = self.y
             return
 
-        move_weights = [self.calculate_momentum_and_weight(cell, env) for cell in open_cells]
-        max_scaled = max(move_weights)
-        move_weights = [exp(s - max_scaled) for s in move_weights]
+        move_weights = [self.calculate_momentum_bonus_and_weight(cell, env) for cell in open_cells]
+        if max(move_weights) >= float_info.max:
+            move_weights = [1.0 if weight >= float_info.max else 0.0 for weight in move_weights]
         total_weight = sum(move_weights)
         # The denominator in equation 2 from the paper
         probabilities = [weight / total_weight for weight in move_weights]
