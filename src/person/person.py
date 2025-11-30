@@ -91,10 +91,10 @@ class Person:
             self.projected_y = self.y
             return
 
-        move_weights = [calculate_move_weight(
-            cell, env) for cell in open_cells]
-        max_scaled = max(move_weights)
-        move_weights = [exp(s - max_scaled) for s in move_weights]
+        move_weights = [calculate_move_weight(cell, env) for cell in open_cells]
+        if max(move_weights) >= float_info.max:
+            move_weights = [1.0 if weight >= float_info.max else 0.0 for weight in move_weights]
+
         total_weight = sum(move_weights)
         # The denominator in equation 2 from the paper
         probabilities = [weight / total_weight for weight in move_weights]
