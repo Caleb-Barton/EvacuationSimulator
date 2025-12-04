@@ -1,0 +1,54 @@
+// Gymnasium - Inner configuration
+//
+###EEE########################################EEE###
+#                                                  #
+#                                       S          #
+#                                                  #
+#                 S                                #
+#                                                  #
+#                                                  #
+#                             S                    #
+#          ##############################          #
+#                                             S    #
+#              SSSSSSSSSSSSSSSSSSSS                #
+#       #      SSSSSSSSSSSSSSSSSSSS        #       #
+#       #      SSSSSSSSSSSSSSSSSSSS        #       #
+#       #      SSSSSSSSSSSSSSSSSSSS        #       #
+#       #      SSSSSSSSSSSSSSSSSSSS        #      S#
+#       #   S  SSSSSSSSSSSSSSSSSSSS        #       #
+#       #      SSSSSSSSSSSSSSSSSSSS        #       #
+#       #      SSSSSSSSSSSSSSSSSSSS        #       #
+#       #      SSSSSSSSSSSSSSSSSSSS        #       #
+#       #      SSSSSSSSSSSSSSSSSSSS        #       #
+#       #      SSSSSSSSSSSSSSSSSSSS        #       #
+#  S    #      SSSSSSSSSSSSSSSSSSSS        #       #
+#       #      SSSSSSSSSSSSSSSSSSSS        #       #
+#       #      SSSSSSSSSSSSSSSSSSSS        #       #
+#       #      SSSSSSSSSSSSSSSSSSSS        #       #
+#       #      SSSSSSSSSSSSSSSSSSSS   S    #       #
+#       #      SSSSSSSSSSSSSSSSSSSS        #  S    #
+#       #      SSSSSSSSSSSSSSSSSSSS        #       #
+#       #      SSSSSSSSSSSSSSSSSSSS        #       #
+#       #      SSSSSSSSSSSSSSSSSSSS        #       #
+#       #                                  #       #
+#       #         S                        #       #
+#       #                                  #       #
+#       #                            S     #       #
+#       #                                  #       #
+#       #                                  #       #
+#       #                                  #       #
+#       #                                  #       #
+#       #                                  #       #
+#       #          S                       #       #
+#       #                                  #       #
+#                                                  #
+#                                                  #
+#          ##############################          #
+#                                                  #
+#      S             S                             #
+#                                                  #
+#                                                  #
+#                                               S  #
+#                  S                   S           #
+#                                   S              #
+###EEE########################################EEE###
