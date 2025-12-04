@@ -56,7 +56,7 @@ class PersonGameState(Enum):
 
 
 class Person:
-    def __init__(self, x: int, y: int, id_num: int, strategy: PersonStrategy, movement_strategy: MovementStrategy):
+    def __init__(self, x: int, y: int, id_num: int, strategy: PersonStrategy, movement_strategy: MovementStrategy, inertia: float):
         self.x = x
         self.y = y
         self.id_num = id_num
@@ -69,6 +69,7 @@ class Person:
         self.game_state = PersonGameState.NOT_PLAYED
         self.momentum = (0, 0)
         self.familiarity = 10
+        self.inertia = inertia
 
     # Function for person to decide where they want to move next
 
@@ -158,13 +159,11 @@ class Person:
                 current_strat_payoff = 1/((num_conflicts - num_cooperators) ** 2)
                 opposite_strat_payoff = 0.0
         # Calculate probability of changing strategy
-        # TODO: Might want to add a command line argument to change inertia value
         inertia = 2
         current_strat_payoff = inertia * current_strat_payoff
         probability = 1/(1 + exp((current_strat_payoff - opposite_strat_payoff)/0.1))
-        # Change strat if greater than threshold
-        # TODO: I'm not sure if the paper specifies a threshold. We may have to change this
-        if probability >= 0.5:
+        # Change strat based on probability
+        if random.random() <= probability:
             if self.strategy == PersonStrategy.COOPERATE:
                 self.strategy = PersonStrategy.DEFECT
             elif self.strategy == PersonStrategy.DEFECT:

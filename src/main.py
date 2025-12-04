@@ -38,6 +38,7 @@ def print_usage():
         ["--spawn_percent=number", "the percentage of people to spawn in the environment"],
         ["--cooperate_percent=number",
             "the percentage of people that will cooperate at the start of the simulation"],
+        ["--inertia=number", "the amount of inertia that will dissuade people from changing their current strategy"]
     ]
 
     print(f"Usage: python {sys.argv[0]} [options]")
@@ -75,8 +76,9 @@ if __name__ == "__main__":
 
     spawn_percent = float(find_argument_value("spawn_percent", "0.75"))
     cooperate_percent = float(find_argument_value("cooperate_percent", "0.5"))
+    inertia = float(find_argument_value("inertia", "2.0"))
 
     run_simulation(movement_strategy=movement_strategy, env=env,
                    visualizers=visualizers, spawn_percent=spawn_percent,
                    cooperate_percent=cooperate_percent,
-                   verbose=True)
+                   verbose=True, inertia=inertia)
