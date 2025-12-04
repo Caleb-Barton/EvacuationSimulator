@@ -13,12 +13,14 @@ def find_argument_value(arg_name: str, default: str) -> str:
 
 
 def find_movement_strategy_argument() -> MovementStrategy:
-    strategy_name = find_argument_value("movement", "static")
+    strategy_name = find_argument_value("movement", "momentum")
     if not strategy_name:
         return MovementStrategy.STATIC_FIELD
     strategy_name = strategy_name.lower()
     if strategy_name == "random":
         return MovementStrategy.RANDOM
+    elif strategy_name == "momentum":
+        return MovementStrategy.STATIC_FIELD_WITH_MOMENTUM
     else:
         return MovementStrategy.STATIC_FIELD
 
@@ -27,7 +29,7 @@ def print_usage():
     args = [
         ["--env=env_name", "the environment to use. should be a .txt file in the environment/ directory"],
         ["--movement=strategy_name",
-            'the movement strategy to use. options are "random" and "static"'],
+            'the movement strategy to use. options are "static", "momentum", and "random". default is "momentum"'],
         ["--json=filename", "if provided, exports a JSON file with the evacuation data to the given filename"],
         ["--video=filename",
             "if provided, exports a video of the evacuation to the given filename"],

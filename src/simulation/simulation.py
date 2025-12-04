@@ -51,9 +51,6 @@ def spawn_people(env, cooperate_percent: float, movement_strategy=MovementStrate
     """
     spawn_count = int(len(env.spawn_points) * spawn_percent)
     selected_spawns = random.sample(env.spawn_points, spawn_count)
-    char_pool = [chr(i) for i in range(ord('a'), ord('z') + 1)]
-    if spawn_count > len(char_pool):
-        raise ValueError("Not enough unique characters to represent people")
     count = 0
     for x, y in selected_spawns:
         count += 1

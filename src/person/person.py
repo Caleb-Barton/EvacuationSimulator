@@ -5,12 +5,15 @@ from math import exp
 from sys import float_info
 from enum import Enum
 
-FAMILIARITY = 10
-
-
 class MovementStrategy(Enum):
     RANDOM = 1
     STATIC_FIELD = 2
+    STATIC_FIELD_WITH_MOMENTUM = 3
+
+def calculate_distance(loc_1: tuple[int, int], loc_2: tuple[int, int]) -> float:
+    dx = loc_2[0] - loc_1[0]
+    dy = loc_2[1] - loc_1[1]
+    return math.sqrt(dx*dx + dy*dy)
 
 
 def find_open_adjacent_cells(x: int, y: int, env: Environment) -> list[tuple[int, int]]:
@@ -23,7 +26,7 @@ def find_open_adjacent_cells(x: int, y: int, env: Environment) -> list[tuple[int
     return open_cells
 
 
-def calculate_move_weight(projected: tuple[int, int], env: Environment) -> float:
+def calculate_move_weight(projected: tuple[int, int], env: Environment, familiarity: int) -> float:
     """
     This is the numerator in equation 2 from the paper
     """
@@ -31,13 +34,15 @@ def calculate_move_weight(projected: tuple[int, int], env: Environment) -> float
     # work around finite max float value
     if projected_sf >= float_info.max:
         return float_info.max
-    return exp(FAMILIARITY * projected_sf)
+    return exp(familiarity * projected_sf)
 
 
 def id_to_color(id_num: int) -> list[int]:
-    random.seed(id_num)
-    return [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)]
-
+    r = random.Random(id_num)
+    # Ensure that white and black (and values close) are not possible
+    color_list = [r.randint(0, 180), r.randint(75, 255), r.randint(0, 255)]
+    r.shuffle(color_list)
+    return color_list
 
 class PersonStrategy(Enum):
     COOPERATE = 1
@@ -62,6 +67,8 @@ class Person:
         self.strategy = strategy
         self.movement_strategy = movement_strategy
         self.game_state = PersonGameState.NOT_PLAYED
+        self.momentum = (0, 0)
+        self.familiarity = 10
 
     # Function for person to decide where they want to move next
 
@@ -69,10 +76,10 @@ class Person:
         self.game_state = PersonGameState.NOT_PLAYED
         if self.movement_strategy == MovementStrategy.RANDOM:
             self._findProjectedMoveRandom(env)
-        elif self.movement_strategy == MovementStrategy.STATIC_FIELD:
+        elif self.movement_strategy == MovementStrategy.STATIC_FIELD or self.movement_strategy == MovementStrategy.STATIC_FIELD_WITH_MOMENTUM:
             self._findProjectedMoveStaticField(env)
         else:
-            raise ValueError("Unknown movement strategy")
+            raise ValueError(f"Unknown movement strategy")
 
     def _findProjectedMoveRandom(self, env):
         open_cells = find_open_adjacent_cells(self.x, self.y, env)
@@ -91,9 +98,17 @@ class Person:
             self.projected_y = self.y
             return
 
-        move_weights = [calculate_move_weight(cell, env) for cell in open_cells]
+        move_weights = [calculate_move_weight(cell, env, self.familiarity) for cell in open_cells]
+        # If at exit ignore non-exits
         if max(move_weights) >= float_info.max:
             move_weights = [1.0 if weight >= float_info.max else 0.0 for weight in move_weights]
+        elif self.movement_strategy == MovementStrategy.STATIC_FIELD_WITH_MOMENTUM:
+            for i, cell in enumerate(open_cells):
+                dx = cell[0] - self.x
+                dy = cell[1] - self.y
+
+                momentum_weight = 3 - calculate_distance((dx, dy), self.momentum)
+                move_weights[i] = move_weights[i] * exp(momentum_weight)
 
         total_weight = sum(move_weights)
         # The denominator in equation 2 from the paper
@@ -101,6 +116,10 @@ class Person:
         move = random.choices(open_cells, weights=probabilities, k=1)[0]
         self.projected_x = move[0]
         self.projected_y = move[1]
+        self.momentum = (self.projected_x - self.x,
+                         self.projected_y - self.y)
+        if self.movement_strategy == MovementStrategy.STATIC_FIELD_WITH_MOMENTUM:
+            self.familiarity += 1
 
     # Function for person to choose what they will play in the prisoner's dilemma
     # True means cooperate, False means defect
@@ -119,6 +138,7 @@ class Person:
         self.game_state = PersonGameState.LOST
         self.projected_x = self.x
         self.projected_y = self.y
+        self.momentum = (0, 0)
 
         # Calculate expected payoff for current strategy and the opposite strategy
         current_strat_payoff = 0.0
