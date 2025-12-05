@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 
 class StepData:
-    def __init__(self, grid_state: list[list[str | object]], escaped_people: list[str]):
+    def __init__(self, grid_state: list[list[str | object]], escaped_people: list[int]):
         self.grid_state = [row.copy() for row in grid_state]
         self.escaped_people = escaped_people.copy()
 

@@ -60,7 +60,7 @@ class PersonGameState(Enum):
 
 
 class Person:
-    def __init__(self, x: int, y: int, id_num: int, strategy: PersonStrategy, movement_strategy: MovementStrategy, inertia: float):
+    def __init__(self, x: int, y: int, id_num: int, strategy: PersonStrategy, movement_strategy: MovementStrategy, inertia: float, strategy_inertia: float, update_interval: int):
         self.x = x
         self.y = y
         self.id_num = id_num
@@ -73,6 +73,10 @@ class Person:
         self.momentum = (0, 0)
         self.familiarity = 10
         self.inertia = inertia
+        self.strategy_inertia = strategy_inertia
+        self.update_interval = update_interval
+
+        self.history = []
 
     # Function for person to decide where they want to move next
 
@@ -138,18 +142,33 @@ class Person:
         else:
             raise ValueError("Unknown person strategy")
 
-    def win(self):
+    def win(self, num_conflicts: int, num_cooperators: int):
         self.game_state = PersonGameState.WON
+        self.history.append(
+            [num_conflicts, num_cooperators, PersonGameState.WON])
+        self.update_strategy()
 
-    def lose(self, num_conflicts, num_cooperators):
+    def lose(self, num_conflicts: int, num_cooperators: int):
         self.game_state = PersonGameState.LOST
         self.projected_x = self.x
         self.projected_y = self.y
         self.momentum = (0, 0)
+        self.history.append(
+            [num_conflicts, num_cooperators, PersonGameState.LOST])
+
+    def update_strategy(self):
+        if not self.history or (len(self.history) % self.update_interval) != 0:
+            return
 
         # Calculate expected payoff for current strategy and the opposite strategy
         current_strat_payoff = 0.0
         opposite_strat_payoff = 0.0
+        num_conflicts = sum(record[0] for record in self.history)
+        num_cooperators = sum(record[1] for record in self.history)
+
+        if num_conflicts == 0:
+            return  # No conflicts, no strategy update
+
         if num_conflicts == num_cooperators:
             if self.strategy == PersonStrategy.COOPERATE:
                 current_strat_payoff = 1/num_cooperators
@@ -167,8 +186,7 @@ class Person:
                     ((num_conflicts - num_cooperators) ** 2)
                 opposite_strat_payoff = 0.0
         # Calculate probability of changing strategy
-        inertia = 2
-        current_strat_payoff = inertia * current_strat_payoff
+        current_strat_payoff = self.strategy_inertia * current_strat_payoff
         probability = 1 / \
             (1 + exp((current_strat_payoff - opposite_strat_payoff)/0.1))
         # Change strat based on probability
@@ -177,6 +195,8 @@ class Person:
                 self.strategy = PersonStrategy.DEFECT
             elif self.strategy == PersonStrategy.DEFECT:
                 self.strategy = PersonStrategy.COOPERATE
+
+        self.history = []
 
     def __str__(self):
         char_num = self.id_num % 25

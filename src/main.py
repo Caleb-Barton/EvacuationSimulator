@@ -42,6 +42,10 @@ def print_usage():
             "the percentage of people that will cooperate at the start of the simulation 0.0-1.0 (default 0.5)"],
         ["--inertia=number",
             "the amount of inertia that will dissuade people from changing their current strategy (default 2.0)"],
+        ["--update_interval=number",
+            "the number of steps between strategy updates (default 10)"],
+        ["--strategy_inertia=number",
+            "the amount of inertia that will dissuade people from changing their current strategy (default 2.0)"],
     ]
 
     print(f"Usage: python {sys.argv[0]} [options]")
@@ -80,8 +84,10 @@ if __name__ == "__main__":
     spawn_percent = float(find_argument_value("spawn_percent", "0.75"))
     cooperate_percent = float(find_argument_value("cooperate_percent", "0.5"))
     inertia = float(find_argument_value("inertia", "2.0"))
+    update_interval = int(find_argument_value("update_interval", "10"))
+    strategy_inertia = float(find_argument_value("strategy_inertia", "2.0"))
 
     run_simulation(movement_strategy=movement_strategy, env=env,
                    visualizers=visualizers, spawn_percent=spawn_percent,
                    cooperate_percent=cooperate_percent,
-                   verbose=True, inertia=inertia)
+                   verbose=True, inertia=inertia, update_interval=update_interval, strategy_inertia=strategy_inertia)

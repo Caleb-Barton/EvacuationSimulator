@@ -31,21 +31,27 @@ def prisoners_dilemma(person_list: list[Person]):
     if len(defector_list) == 0:
         # All collaborate! Choose a random collaborator to win
         winner = random.choice(collaborator_list)
-        winner.win()
+        winner.win(num_conflicts=len(person_list),
+                   num_cooperators=len(collaborator_list))
     elif len(defector_list) == 1:
         # Lone defector wins
         winner = defector_list[0]
-        defector_list[0].win()
+        defector_list[0].win(num_conflicts=0, num_cooperators=0)
     else:
         # competition between all defectors
         if random.random() < 1/len(defector_list):
             winner = random.choice(defector_list)
-            winner.win()
-    [person.lose(len(person_list), len(collaborator_list)) for person in collaborator_list if person != winner]
-    [person.lose(len(person_list), len(collaborator_list)) for person in defector_list if person != winner]
+            winner.win(num_conflicts=len(person_list),
+                       num_cooperators=len(collaborator_list))
+    [person.lose(len(person_list), len(collaborator_list))
+     for person in collaborator_list if person != winner]
+    [person.lose(len(person_list), len(collaborator_list))
+     for person in defector_list if person != winner]
 
 
-def spawn_people(env, cooperate_percent: float, inertia: float, movement_strategy=MovementStrategy.STATIC_FIELD, spawn_percent=1.0):
+def spawn_people(env, cooperate_percent: float, inertia: float,
+                 update_interval: int, strategy_inertia: float,
+                 movement_strategy=MovementStrategy.STATIC_FIELD, spawn_percent=1.0):
     """
     Function to spawn people in the environment at random spawn points.
     """
@@ -60,7 +66,8 @@ def spawn_people(env, cooperate_percent: float, inertia: float, movement_strateg
         else:
             strategy = PersonStrategy.DEFECT
         env.grid[y][x] = Person(x=x, y=y, id_num=person_char,
-                                movement_strategy=movement_strategy, strategy=strategy, inertia=inertia)
+                                movement_strategy=movement_strategy, strategy=strategy, inertia=inertia, strategy_inertia=strategy_inertia,
+                                update_interval=update_interval)
 
 
 def move(env):
@@ -85,6 +92,7 @@ def move(env):
                     env_copy.grid[current_person.y][current_person.x] = current_person
                 else:
                     env_copy.escaped_people.append(current_person.id_num)
+                current_person.update_strategy()
     return env_copy
 
 
@@ -117,9 +125,12 @@ def game_loop(env: Environment, visualizers: list[GenericVisualization], verbose
         # Play the prisoner's dilemma if any two people have the same projected moves
         for y in range(len(env.grid)):
             for x in range(len(env.grid[y])):
+                person = env.grid[y][x]
                 conflict_people = identify_move_conflicts(env, x, y)
                 if len(conflict_people) > 1:
                     prisoners_dilemma(conflict_people)
+                elif isinstance(person, Person):
+                    person.win(num_conflicts=0, num_cooperators=0)
         # Move each player
         env = move(env)
         [visualizer.record_step(
@@ -136,17 +147,18 @@ def game_loop(env: Environment, visualizers: list[GenericVisualization], verbose
     [visualizer.export(verbose) for visualizer in visualizers]
 
 
-def run_simulation(movement_strategy: MovementStrategy, env: Environment, visualizers: list[GenericVisualization], spawn_percent: float, cooperate_percent: float, inertia: float, verbose=True):
+def run_simulation(movement_strategy: MovementStrategy, env: Environment, visualizers: list[GenericVisualization], spawn_percent: float, cooperate_percent: float, inertia: float, update_interval: int, strategy_inertia: float, verbose=True):
     """
     Primary entry point to run the evacuation simulation.
     Outputs data via the provided visualizers.
     """
 
     spawn_people(env, movement_strategy=movement_strategy,
-                 spawn_percent=spawn_percent, cooperate_percent=cooperate_percent, inertia=inertia)
+                 spawn_percent=spawn_percent, cooperate_percent=cooperate_percent, inertia=inertia, strategy_inertia=strategy_inertia, update_interval=update_interval)
     [visualizer.record_step(
         StepData(
             grid_state=env.grid,
             escaped_people=env.escaped_people
         )) for visualizer in visualizers]
-    game_loop(env=env, visualizers=visualizers, verbose=verbose)
+    game_loop(env=env, visualizers=visualizers,
+              verbose=verbose)
