@@ -78,8 +78,6 @@ class Person:
 
         self.history = []
 
-    # Function for person to decide where they want to move next
-
     def findProjectedMove(self, env):
         self.game_state = PersonGameState.NOT_PLAYED
         if self.movement_strategy == MovementStrategy.RANDOM:
@@ -143,10 +141,9 @@ class Person:
             raise ValueError("Unknown person strategy")
 
     def win(self, num_conflicts: int, num_cooperators: int):
-        self.game_state = PersonGameState.WON
+        self.game_state = PersonGameState.WON if num_conflicts > 0 else PersonGameState.NOT_PLAYED
         self.history.append(
             [num_conflicts, num_cooperators, PersonGameState.WON])
-        self.update_strategy()
 
     def lose(self, num_conflicts: int, num_cooperators: int):
         self.game_state = PersonGameState.LOST
@@ -157,6 +154,7 @@ class Person:
             [num_conflicts, num_cooperators, PersonGameState.LOST])
 
     def update_strategy(self):
+        self.game_state = PersonGameState.NOT_PLAYED
         if not self.history or (len(self.history) % self.update_interval) != 0:
             return
 
@@ -199,5 +197,4 @@ class Person:
         self.history = []
 
     def __str__(self):
-        char_num = self.id_num % 25
-        return chr(ord('a') + char_num)
+        return f"Person(id={self.id_num}, x={self.x}, y={self.y}, s={self.strategy})"

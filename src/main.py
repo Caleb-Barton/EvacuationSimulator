@@ -3,6 +3,7 @@ from person import MovementStrategy
 import sys
 from visualization import GenericVisualization, VideoVisualization, JsonVisualization
 from simulation import run_simulation
+import random
 
 
 def find_argument_value(arg_name: str, default: str) -> str:
@@ -46,6 +47,9 @@ def print_usage():
             "the number of steps between strategy updates (default 10)"],
         ["--strategy_inertia=number",
             "the amount of inertia that will dissuade people from changing their current strategy (default 2.0)"],
+        ["--seed=number",
+            "the random seed to use for the simulation (default is random)"],
+        ["--verbose=true", "if provided, enables verbose output during the simulation"]
     ]
 
     print(f"Usage: python {sys.argv[0]} [options]")
@@ -58,6 +62,11 @@ if __name__ == "__main__":
     if "--help" in sys.argv or "-h" in sys.argv:
         print_usage()
         sys.exit(0)
+
+    verbose = "--verbose=true" in sys.argv
+    seed = find_argument_value("seed", "")
+    if seed:
+        random.seed(int(seed))
 
     movement_strategy = find_movement_strategy_argument()
     env_name = find_argument_value("env", "env1")
@@ -73,7 +82,8 @@ if __name__ == "__main__":
         visualizers.append(VideoVisualization(
             filename=video_filename,
             fps=fps,
-            export_frames=export_frames
+            export_frames=export_frames,
+            verbose=verbose
         ))
     if json_filename:
         visualizers.append(JsonVisualization(
@@ -90,4 +100,4 @@ if __name__ == "__main__":
     run_simulation(movement_strategy=movement_strategy, env=env,
                    visualizers=visualizers, spawn_percent=spawn_percent,
                    cooperate_percent=cooperate_percent,
-                   verbose=True, inertia=inertia, update_interval=update_interval, strategy_inertia=strategy_inertia)
+                   verbose=verbose, inertia=inertia, update_interval=update_interval, strategy_inertia=strategy_inertia)

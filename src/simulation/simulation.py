@@ -5,7 +5,7 @@ from person import Person, MovementStrategy, PersonStrategy, PersonGameState
 from visualization import GenericVisualization, StepData
 
 
-def prisoners_dilemma(person_list: list[Person]):
+def prisoners_dilemma(person_list: list[Person], location: tuple[int, int], verbose=False):
     """
     Function to play the prisoner's dilemma game when there is a conflict
     among multiple people trying to move to the same cell.
@@ -36,7 +36,8 @@ def prisoners_dilemma(person_list: list[Person]):
     elif len(defector_list) == 1:
         # Lone defector wins
         winner = defector_list[0]
-        defector_list[0].win(num_conflicts=0, num_cooperators=0)
+        defector_list[0].win(num_conflicts=len(person_list),
+                             num_cooperators=len(collaborator_list))
     else:
         # competition between all defectors
         if random.random() < 1/len(defector_list):
@@ -47,6 +48,9 @@ def prisoners_dilemma(person_list: list[Person]):
      for person in collaborator_list if person != winner]
     [person.lose(len(person_list), len(collaborator_list))
      for person in defector_list if person != winner]
+    if verbose:
+        print(
+            f"Prisoner's Dilemma at {location}:\n\tcooperate: {[str(c) for c in collaborator_list]}\n\tdefect: {[str(d) for d in defector_list]}\n\tWinner: {winner}")
 
 
 def spawn_people(env, cooperate_percent: float, inertia: float,
@@ -92,8 +96,16 @@ def move(env):
                     env_copy.grid[current_person.y][current_person.x] = current_person
                 else:
                     env_copy.escaped_people.append(current_person.id_num)
-                current_person.update_strategy()
     return env_copy
+
+
+def update_strategy(env):
+    for row in range(len(env.grid)):
+        for col in range(len(env.grid[row])):
+            current_value = env.grid[row][col]
+            if isinstance(current_value, Person):
+                current_person = current_value
+                current_person.update_strategy()
 
 
 def identify_move_conflicts(env, x, y):
@@ -117,6 +129,8 @@ def game_loop(env: Environment, visualizers: list[GenericVisualization], verbose
     """
     iteration = 0
     while any(isinstance(item, Person) for row in env.grid for item in row):
+        if verbose:
+            print(f"Iteration {iteration}:")
         # Find projected moves for each player
         for row in env.grid:
             for item in row:
@@ -128,7 +142,8 @@ def game_loop(env: Environment, visualizers: list[GenericVisualization], verbose
                 person = env.grid[y][x]
                 conflict_people = identify_move_conflicts(env, x, y)
                 if len(conflict_people) > 1:
-                    prisoners_dilemma(conflict_people)
+                    prisoners_dilemma(
+                        conflict_people, location=(x, y), verbose=verbose)
                 elif isinstance(person, Person):
                     person.win(num_conflicts=0, num_cooperators=0)
         # Move each player
@@ -138,7 +153,12 @@ def game_loop(env: Environment, visualizers: list[GenericVisualization], verbose
                 grid_state=env.grid,
                 escaped_people=env.escaped_people
             )) for visualizer in visualizers]
+        if verbose:
+            print(f"Updating strategies...")
+        update_strategy(env)
         iteration += 1
+        if verbose:
+            print()
     if verbose:
         print(f"All people have evacuated in {iteration} iterations.")
         print(
