@@ -154,6 +154,9 @@ class Person:
             [num_conflicts, num_cooperators, PersonGameState.LOST])
 
     def update_strategy(self):
+        if self.game_state == PersonGameState.NOT_PLAYED:
+            self.history.append([0, 0, PersonGameState.NOT_PLAYED])
+
         self.game_state = PersonGameState.NOT_PLAYED
         if not self.history or (len(self.history) % self.update_interval) != 0:
             return

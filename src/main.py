@@ -97,6 +97,11 @@ if __name__ == "__main__":
     update_interval = int(find_argument_value("update_interval", "10"))
     strategy_inertia = float(find_argument_value("strategy_inertia", "2.0"))
 
+    if verbose:
+        print(f"Starting simulation with environment '{env_name}', movement strategy '{movement_strategy.name}', "
+              f"spawn percent {spawn_percent}, cooperate percent {cooperate_percent}, inertia {inertia}, "
+              f"update interval {update_interval}, strategy inertia {strategy_inertia}.")
+
     run_simulation(movement_strategy=movement_strategy, env=env,
                    visualizers=visualizers, spawn_percent=spawn_percent,
                    cooperate_percent=cooperate_percent,

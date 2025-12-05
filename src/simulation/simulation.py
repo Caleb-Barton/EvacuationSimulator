@@ -55,7 +55,7 @@ def prisoners_dilemma(person_list: list[Person], location: tuple[int, int], verb
 
 def spawn_people(env, cooperate_percent: float, inertia: float,
                  update_interval: int, strategy_inertia: float,
-                 movement_strategy=MovementStrategy.STATIC_FIELD, spawn_percent=1.0):
+                 movement_strategy: MovementStrategy, spawn_percent: float):
     """
     Function to spawn people in the environment at random spawn points.
     """
@@ -64,12 +64,11 @@ def spawn_people(env, cooperate_percent: float, inertia: float,
     count = 0
     for x, y in selected_spawns:
         count += 1
-        person_char = count
         if random.random() < cooperate_percent:
             strategy = PersonStrategy.COOPERATE
         else:
             strategy = PersonStrategy.DEFECT
-        env.grid[y][x] = Person(x=x, y=y, id_num=person_char,
+        env.grid[y][x] = Person(x=x, y=y, id_num=count,
                                 movement_strategy=movement_strategy, strategy=strategy, inertia=inertia, strategy_inertia=strategy_inertia,
                                 update_interval=update_interval)
 
