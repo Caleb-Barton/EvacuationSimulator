@@ -5,10 +5,12 @@ from math import exp
 from sys import float_info
 from enum import Enum
 
+
 class MovementStrategy(Enum):
     RANDOM = 1
     STATIC_FIELD = 2
     STATIC_FIELD_WITH_MOMENTUM = 3
+
 
 def calculate_distance(loc_1: tuple[int, int], loc_2: tuple[int, int]) -> float:
     dx = loc_2[0] - loc_1[0]
@@ -18,7 +20,8 @@ def calculate_distance(loc_1: tuple[int, int], loc_2: tuple[int, int]) -> float:
 
 def find_open_adjacent_cells(x: int, y: int, env: Environment) -> list[tuple[int, int]]:
     open_cells = []
-    directions = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, -1), (-1, 1)]
+    directions = [(1, 0), (-1, 0), (0, 1), (0, -1),
+                  (1, 1), (1, -1), (-1, -1), (-1, 1)]
     for dx, dy in directions:
         new_x, new_y = x + dx, y + dy
         if env.is_walkable(new_x, new_y):
@@ -44,6 +47,7 @@ def id_to_color(id_num: int) -> list[int]:
     r.shuffle(color_list)
     return color_list
 
+
 class PersonStrategy(Enum):
     COOPERATE = 1
     DEFECT = 2
@@ -62,7 +66,6 @@ class Person:
         self.id_num = id_num
         self.projected_x = 0
         self.projected_y = 0
-        self.strategy = movement_strategy
         self.color = id_to_color(id_num)
         self.strategy = strategy
         self.movement_strategy = movement_strategy
@@ -99,16 +102,19 @@ class Person:
             self.projected_y = self.y
             return
 
-        move_weights = [calculate_move_weight(cell, env, self.familiarity) for cell in open_cells]
+        move_weights = [calculate_move_weight(
+            cell, env, self.familiarity) for cell in open_cells]
         # If at exit ignore non-exits
         if max(move_weights) >= float_info.max:
-            move_weights = [1.0 if weight >= float_info.max else 0.0 for weight in move_weights]
+            move_weights = [1.0 if weight >=
+                            float_info.max else 0.0 for weight in move_weights]
         elif self.movement_strategy == MovementStrategy.STATIC_FIELD_WITH_MOMENTUM:
             for i, cell in enumerate(open_cells):
                 dx = cell[0] - self.x
                 dy = cell[1] - self.y
 
-                momentum_weight = 3 - calculate_distance((dx, dy), self.momentum)
+                momentum_weight = 3 - \
+                    calculate_distance((dx, dy), self.momentum)
                 move_weights[i] = move_weights[i] * exp(momentum_weight)
 
         total_weight = sum(move_weights)
@@ -154,14 +160,17 @@ class Person:
         elif num_conflicts - num_cooperators > 1:
             if self.strategy == PersonStrategy.COOPERATE:
                 current_strat_payoff = 0.0
-                opposite_strat_payoff = 1/((num_conflicts - num_cooperators) ** 2)
+                opposite_strat_payoff = 1 / \
+                    ((num_conflicts - num_cooperators) ** 2)
             if self.strategy == PersonStrategy.DEFECT:
-                current_strat_payoff = 1/((num_conflicts - num_cooperators) ** 2)
+                current_strat_payoff = 1 / \
+                    ((num_conflicts - num_cooperators) ** 2)
                 opposite_strat_payoff = 0.0
         # Calculate probability of changing strategy
         inertia = 2
         current_strat_payoff = inertia * current_strat_payoff
-        probability = 1/(1 + exp((current_strat_payoff - opposite_strat_payoff)/0.1))
+        probability = 1 / \
+            (1 + exp((current_strat_payoff - opposite_strat_payoff)/0.1))
         # Change strat based on probability
         if random.random() <= probability:
             if self.strategy == PersonStrategy.COOPERATE:

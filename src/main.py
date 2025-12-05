@@ -33,12 +33,15 @@ def print_usage():
         ["--json=filename", "if provided, exports a JSON file with the evacuation data to the given filename"],
         ["--video=filename",
             "if provided, exports a video of the evacuation to the given filename"],
-        ["--fps=number", "the frames per second for the exported video"],
+        ["--fps=number",
+            "the frames per second for the exported video (default 2)"],
         ["--frames", "if provided, exports individual frames as PNG files in addition to the video"],
-        ["--spawn_percent=number", "the percentage of people to spawn in the environment"],
+        ["--spawn_percent=number",
+            "the percentage of people to spawn in the environment 0.0-1.0 (default 0.75)"],
         ["--cooperate_percent=number",
-            "the percentage of people that will cooperate at the start of the simulation"],
-        ["--inertia=number", "the amount of inertia that will dissuade people from changing their current strategy"]
+            "the percentage of people that will cooperate at the start of the simulation 0.0-1.0 (default 0.5)"],
+        ["--inertia=number",
+            "the amount of inertia that will dissuade people from changing their current strategy (default 2.0)"],
     ]
 
     print(f"Usage: python {sys.argv[0]} [options]")

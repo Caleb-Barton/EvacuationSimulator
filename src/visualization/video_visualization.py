@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 from matplotlib.animation import FFMpegWriter
 from matplotlib import animation
 import numpy as np
-from person import Person, PersonGameState
+from person import Person, PersonGameState, PersonStrategy
 from .generic_visualization import GenericVisualization, StepData
 from matplotlib.patches import Rectangle
 import os
@@ -42,7 +42,8 @@ class VideoVisualization(GenericVisualization):
                 elif cell == 'E':
                     img[y, x] = [0, 255, 0]      # Green for exits
                 elif isinstance(cell, Person):
-                    img[y, x] = cell.color
+                    img[y, x] = [0, 255, 0] if cell.strategy == PersonStrategy.COOPERATE else [
+                        255, 0, 0]  # Green for cooperate, Red for defect
                     if cell.game_state == PersonGameState.WON:
                         winners.append((x, y))
                     elif cell.game_state == PersonGameState.LOST:
