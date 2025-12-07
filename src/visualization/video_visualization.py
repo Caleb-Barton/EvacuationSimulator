@@ -112,4 +112,5 @@ class VideoVisualization(GenericVisualization):
             fig, update, frames=len(self.frame_data), interval=interval)
         ani.save(self.filename, writer=FFMpegWriter(fps=self.fps))
         plt.close()
-        print("Saved evacuation video to " + self.filename)
+        if verbose:
+            print("Saved evacuation video to " + self.filename)

@@ -53,23 +53,32 @@ def prisoners_dilemma(person_list: list[Person], location: tuple[int, int], verb
             f"Prisoner's Dilemma at {location}:\n\tcooperate: {[str(c) for c in collaborator_list]}\n\tdefect: {[str(d) for d in defector_list]}\n\tWinner: {winner}")
 
 
-def spawn_people(env, cooperate_percent: float, inertia: float,
+def spawn_people(env, cooperate_percent: float,
                  update_interval: int, strategy_inertia: float,
                  movement_strategy: MovementStrategy, spawn_percent: float):
     """
     Function to spawn people in the environment at random spawn points.
     """
     spawn_count = int(len(env.spawn_points) * spawn_percent)
-    selected_spawns = random.sample(env.spawn_points, spawn_count)
-    count = 0
-    for x, y in selected_spawns:
-        count += 1
-        if random.random() < cooperate_percent:
-            strategy = PersonStrategy.COOPERATE
-        else:
-            strategy = PersonStrategy.DEFECT
+    spawn_points = random.sample(env.spawn_points, spawn_count)
+
+    # Calculate exact number of cooperators and defectors
+    cooperate_count = int(spawn_count * cooperate_percent)
+    defect_count = spawn_count - cooperate_count
+
+    # Create a list of strategies with the exact ratio
+    strategies = ([PersonStrategy.COOPERATE] * cooperate_count +
+                  [PersonStrategy.DEFECT] * defect_count)
+
+    # Shuffle the strategies
+    random.shuffle(strategies)
+
+    # Assign strategies to spawn points
+    for count, ((x, y), strategy) in enumerate(zip(spawn_points, strategies), start=1):
         env.grid[y][x] = Person(x=x, y=y, id_num=count,
-                                movement_strategy=movement_strategy, strategy=strategy, inertia=inertia, strategy_inertia=strategy_inertia,
+                                movement_strategy=movement_strategy,
+                                strategy=strategy,
+                                strategy_inertia=strategy_inertia,
                                 update_interval=update_interval)
 
 
@@ -94,7 +103,7 @@ def move(env):
                 if not (env.grid[current_person.y][current_person.x] == "E"):
                     env_copy.grid[current_person.y][current_person.x] = current_person
                 else:
-                    env_copy.escaped_people.append(current_person.id_num)
+                    env_copy.escaped_people.append(current_person)
     return env_copy
 
 
@@ -138,13 +147,10 @@ def game_loop(env: Environment, visualizers: list[GenericVisualization], verbose
         # Play the prisoner's dilemma if any two people have the same projected moves
         for y in range(len(env.grid)):
             for x in range(len(env.grid[y])):
-                person = env.grid[y][x]
                 conflict_people = identify_move_conflicts(env, x, y)
                 if len(conflict_people) > 1:
                     prisoners_dilemma(
                         conflict_people, location=(x, y), verbose=verbose)
-                elif isinstance(person, Person):
-                    person.win(num_conflicts=0, num_cooperators=0)
         # Move each player
         env = move(env)
         [visualizer.record_step(
@@ -160,20 +166,21 @@ def game_loop(env: Environment, visualizers: list[GenericVisualization], verbose
             print()
     if verbose:
         print(f"All people have evacuated in {iteration} iterations.")
+        people: list[Person] = env.escaped_people  # type: ignore
         print(
-            f"Escaped people: {[id_num for id_num in env.escaped_people]}")
+            f"Escaped people: {[p.id_num for p in people]}")
 
     [visualizer.export(verbose) for visualizer in visualizers]
 
 
-def run_simulation(movement_strategy: MovementStrategy, env: Environment, visualizers: list[GenericVisualization], spawn_percent: float, cooperate_percent: float, inertia: float, update_interval: int, strategy_inertia: float, verbose=True):
+def run_simulation(movement_strategy: MovementStrategy, env: Environment, visualizers: list[GenericVisualization], spawn_percent: float, cooperate_percent: float, update_interval: int, strategy_inertia: float, verbose=True):
     """
     Primary entry point to run the evacuation simulation.
     Outputs data via the provided visualizers.
     """
 
     spawn_people(env, movement_strategy=movement_strategy,
-                 spawn_percent=spawn_percent, cooperate_percent=cooperate_percent, inertia=inertia, strategy_inertia=strategy_inertia, update_interval=update_interval)
+                 spawn_percent=spawn_percent, cooperate_percent=cooperate_percent, strategy_inertia=strategy_inertia, update_interval=update_interval)
     [visualizer.record_step(
         StepData(
             grid_state=env.grid,

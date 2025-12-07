@@ -36,13 +36,11 @@ def print_usage():
             "if provided, exports a video of the evacuation to the given filename"],
         ["--fps=number",
             "the frames per second for the exported video (default 2)"],
-        ["--frames", "if provided, exports individual frames as PNG files in addition to the video"],
+        ["--frames=true", "if provided, exports individual frames as PNG files in addition to the video"],
         ["--spawn_percent=number",
             "the percentage of people to spawn in the environment 0.0-1.0 (default 0.75)"],
         ["--cooperate_percent=number",
             "the percentage of people that will cooperate at the start of the simulation 0.0-1.0 (default 0.5)"],
-        ["--inertia=number",
-            "the amount of inertia that will dissuade people from changing their current strategy (default 2.0)"],
         ["--update_interval=number",
             "the number of steps between strategy updates (default 10)"],
         ["--strategy_inertia=number",
@@ -78,7 +76,7 @@ if __name__ == "__main__":
     if video_filename:
         fps_str = find_argument_value("fps", "2")
         fps = int(fps_str) if fps_str else 2
-        export_frames = "--frames" in sys.argv
+        export_frames = "--frames=true" in sys.argv
         visualizers.append(VideoVisualization(
             filename=video_filename,
             fps=fps,
@@ -93,16 +91,15 @@ if __name__ == "__main__":
 
     spawn_percent = float(find_argument_value("spawn_percent", "0.75"))
     cooperate_percent = float(find_argument_value("cooperate_percent", "0.5"))
-    inertia = float(find_argument_value("inertia", "2.0"))
     update_interval = int(find_argument_value("update_interval", "10"))
     strategy_inertia = float(find_argument_value("strategy_inertia", "2.0"))
 
     if verbose:
         print(f"Starting simulation with environment '{env_name}', movement strategy '{movement_strategy.name}', "
-              f"spawn percent {spawn_percent}, cooperate percent {cooperate_percent}, inertia {inertia}, "
+              f"spawn percent {spawn_percent}, cooperate percent {cooperate_percent}, "
               f"update interval {update_interval}, strategy inertia {strategy_inertia}.")
 
     run_simulation(movement_strategy=movement_strategy, env=env,
                    visualizers=visualizers, spawn_percent=spawn_percent,
                    cooperate_percent=cooperate_percent,
-                   verbose=verbose, inertia=inertia, update_interval=update_interval, strategy_inertia=strategy_inertia)
+                   verbose=verbose, update_interval=update_interval, strategy_inertia=strategy_inertia)
