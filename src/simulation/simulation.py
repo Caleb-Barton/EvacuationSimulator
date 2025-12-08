@@ -55,7 +55,7 @@ def prisoners_dilemma(person_list: list[Person], location: tuple[int, int], verb
 
 def spawn_people(env, cooperate_percent: float,
                  update_interval: int, strategy_inertia: float,
-                 movement_strategy: MovementStrategy, spawn_percent: float):
+                 movement_strategy: MovementStrategy, spawn_percent: float, familiarity: int):
     """
     Function to spawn people in the environment at random spawn points.
     """
@@ -79,7 +79,8 @@ def spawn_people(env, cooperate_percent: float,
                                 movement_strategy=movement_strategy,
                                 strategy=strategy,
                                 strategy_inertia=strategy_inertia,
-                                update_interval=update_interval)
+                                update_interval=update_interval,
+                                familiarity=familiarity)
 
 
 def move(env):
@@ -173,14 +174,14 @@ def game_loop(env: Environment, visualizers: list[GenericVisualization], verbose
     [visualizer.export(verbose) for visualizer in visualizers]
 
 
-def run_simulation(movement_strategy: MovementStrategy, env: Environment, visualizers: list[GenericVisualization], spawn_percent: float, cooperate_percent: float, update_interval: int, strategy_inertia: float, verbose=True):
+def run_simulation(movement_strategy: MovementStrategy, env: Environment, visualizers: list[GenericVisualization], spawn_percent: float, cooperate_percent: float, update_interval: int, strategy_inertia: float, familiarity: int, verbose=True):
     """
     Primary entry point to run the evacuation simulation.
     Outputs data via the provided visualizers.
     """
 
     spawn_people(env, movement_strategy=movement_strategy,
-                 spawn_percent=spawn_percent, cooperate_percent=cooperate_percent, strategy_inertia=strategy_inertia, update_interval=update_interval)
+                 spawn_percent=spawn_percent, cooperate_percent=cooperate_percent, strategy_inertia=strategy_inertia, update_interval=update_interval, familiarity=familiarity)
     [visualizer.record_step(
         StepData(
             grid_state=env.grid,

@@ -60,7 +60,7 @@ class PersonGameState(Enum):
 
 
 class Person:
-    def __init__(self, x: int, y: int, id_num: int, strategy: PersonStrategy, movement_strategy: MovementStrategy, strategy_inertia: float, update_interval: int):
+    def __init__(self, x: int, y: int, id_num: int, strategy: PersonStrategy, movement_strategy: MovementStrategy, strategy_inertia: float, update_interval: int, familiarity: int):
         self.x = x
         self.y = y
         self.id_num = id_num
@@ -71,7 +71,7 @@ class Person:
         self.movement_strategy = movement_strategy
         self.game_state = PersonGameState.NOT_PLAYED
         self.momentum = (0, 0)
-        self.familiarity = 10
+        self.familiarity = familiarity
         self.strategy_inertia = strategy_inertia
         self.update_interval = update_interval
 

@@ -45,6 +45,8 @@ def print_usage():
             "the number of steps between strategy updates (default 10)"],
         ["--strategy_inertia=number",
             "the amount of inertia that will dissuade people from changing their current strategy (default 2.0)"],
+        ["--familiarity=number",
+            "the familiarity with the environment (default 10)"],
         ["--seed=number",
             "the random seed to use for the simulation (default is random)"],
         ["--verbose=true", "if provided, enables verbose output during the simulation"]
@@ -74,7 +76,7 @@ if __name__ == "__main__":
     video_filename = find_argument_value("video", "")
     visualizers: list[GenericVisualization] = []
     if video_filename:
-        fps_str = find_argument_value("fps", "2")
+        fps_str = find_argument_value("fps", "10")
         fps = int(fps_str) if fps_str else 2
         export_frames = "--frames=true" in sys.argv
         visualizers.append(VideoVisualization(
@@ -93,13 +95,14 @@ if __name__ == "__main__":
     cooperate_percent = float(find_argument_value("cooperate_percent", "0.5"))
     update_interval = int(find_argument_value("update_interval", "10"))
     strategy_inertia = float(find_argument_value("strategy_inertia", "2.0"))
+    familiarity = int(find_argument_value("familiarity", "10"))
 
     if verbose:
         print(f"Starting simulation with environment '{env_name}', movement strategy '{movement_strategy.name}', "
               f"spawn percent {spawn_percent}, cooperate percent {cooperate_percent}, "
-              f"update interval {update_interval}, strategy inertia {strategy_inertia}.")
+              f"update interval {update_interval}, strategy inertia {strategy_inertia}, familiarity {familiarity}.")
 
     run_simulation(movement_strategy=movement_strategy, env=env,
                    visualizers=visualizers, spawn_percent=spawn_percent,
                    cooperate_percent=cooperate_percent,
-                   verbose=verbose, update_interval=update_interval, strategy_inertia=strategy_inertia)
+                   verbose=verbose, update_interval=update_interval, strategy_inertia=strategy_inertia, familiarity=familiarity)
