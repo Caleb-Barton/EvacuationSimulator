@@ -24,6 +24,7 @@ def sum_escape_times(root_dir):
 
     :param root_dir: Description
     """
+    print(f"\nProcessing directory: {root_dir}")
     global max_time
     json_files = []
 
@@ -56,41 +57,28 @@ def sum_escape_times(root_dir):
                             for arr in escape_times)
         time_steps[t] = escaped_count / total_count
     max_time = max(max_time, max_escape_time + 10)
-    plt.figure()
     plt.plot(list(time_steps.keys()), list(time_steps.values()), marker='o')
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print(f"Usage: {sys.argv[0]} <directory>")
+        sys.exit(1)
+
+    root_directory = sys.argv[1]
+
+    if not os.path.isdir(root_directory):
+        print(f"Error: '{root_directory}' is not a directory.")
+        sys.exit(1)
+
+    plt.figure()
+    sum_escape_times(f"{root_directory}/static")
+    sum_escape_times(f"{root_directory}/momentum")
     plt.xlabel("Time Step")
     plt.ylabel("Fraction of People Escaped")
-    plt.title(f"Evacuation Curve for {root_dir.split("/")[-1].capitalize()}")
+    plt.title(f"Evacuation Curve")
     plt.xlim(0, max_time)
     plt.grid(True)
-    plt.savefig(os.path.join(root_dir, f"{root_dir.split("/")[-1]}.png"))
+    plt.legend(["Static Field", "Static Field w/Momentum"])
+    plt.savefig(os.path.join(root_directory, "escape_curve.png"))
     plt.close()
-
-
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print(f"Usage: {sys.argv[0]} <directory>")
-        sys.exit(1)
-
-    root_directory = sys.argv[1]
-
-    if not os.path.isdir(root_directory):
-        print(f"Error: '{root_directory}' is not a directory.")
-        sys.exit(1)
-
-    sum_escape_times(root_directory)
-
-
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print(f"Usage: {sys.argv[0]} <directory>")
-        sys.exit(1)
-
-    root_directory = sys.argv[1]
-
-    if not os.path.isdir(root_directory):
-        print(f"Error: '{root_directory}' is not a directory.")
-        sys.exit(1)
-
-    sum_escape_times(f"{root_directory}/momentum")
-    sum_escape_times(f"{root_directory}/static")
