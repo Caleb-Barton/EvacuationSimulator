@@ -4,13 +4,10 @@ from environment import Environment
 from person import Person, MovementStrategy, PersonStrategy, PersonGameState
 from visualization import GenericVisualization, StepData
 
-
 def prisoners_dilemma(person_list: list[Person], location: tuple[int, int], verbose=False):
     """
     Function to play the prisoner's dilemma game when there is a conflict
     among multiple people trying to move to the same cell.
-
-    Assumed P=2 for simplicity.
     """
 
     if len(person_list) < 2:
@@ -40,7 +37,7 @@ def prisoners_dilemma(person_list: list[Person], location: tuple[int, int], verb
                              num_cooperators=len(collaborator_list))
     else:
         # competition between all defectors
-        if random.random() < 1/len(defector_list):
+        if random.random() < 1/len(defector_list) ** (defector_list[0].p_value - 1):
             winner = random.choice(defector_list)
             winner.win(num_conflicts=len(person_list),
                        num_cooperators=len(collaborator_list))

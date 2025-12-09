@@ -45,6 +45,8 @@ def print_usage():
             "the number of steps between strategy updates (default 10)"],
         ["--strategy_inertia=number",
             "the amount of inertia that will dissuade people from changing their current strategy (default 2.0)"],
+        ["--p_value=number",
+            "the defector payoff (default 2.0)"],
         ["--familiarity=number",
             "the familiarity with the environment (default 10)"],
         ["--seed=number",
@@ -95,12 +97,13 @@ if __name__ == "__main__":
     cooperate_percent = float(find_argument_value("cooperate_percent", "0.5"))
     update_interval = int(find_argument_value("update_interval", "10"))
     strategy_inertia = float(find_argument_value("strategy_inertia", "2.0"))
+    p_value = float(find_argument_value("p_value", "2.0"))
     familiarity = int(find_argument_value("familiarity", "10"))
 
     if verbose:
         print(f"Starting simulation with environment '{env_name}', movement strategy '{movement_strategy.name}', "
               f"spawn percent {spawn_percent}, cooperate percent {cooperate_percent}, "
-              f"update interval {update_interval}, strategy inertia {strategy_inertia}, familiarity {familiarity}.")
+              f"update interval {update_interval}, strategy inertia {strategy_inertia}, p_value {p_value}, familiarity {familiarity}.")
 
     run_simulation(movement_strategy=movement_strategy, env=env,
                    visualizers=visualizers, spawn_percent=spawn_percent,

@@ -60,7 +60,7 @@ class PersonGameState(Enum):
 
 
 class Person:
-    def __init__(self, x: int, y: int, id_num: int, strategy: PersonStrategy, movement_strategy: MovementStrategy, strategy_inertia: float, update_interval: int, familiarity: int):
+    def __init__(self, x: int, y: int, id_num: int, strategy: PersonStrategy, movement_strategy: MovementStrategy, strategy_inertia: float, update_interval: int, familiarity: int, p_value: float = 2):
         self.x = x
         self.y = y
         self.id_num = id_num
@@ -74,6 +74,7 @@ class Person:
         self.familiarity = familiarity
         self.strategy_inertia = strategy_inertia
         self.update_interval = update_interval
+        self.p_value = p_value
 
         self.history = []
 
@@ -180,10 +181,10 @@ class Person:
             if self.strategy == PersonStrategy.COOPERATE:
                 current_strat_payoff = 0.0
                 opposite_strat_payoff = 1 / \
-                    ((num_conflicts - num_cooperators) ** 2)
+                    ((num_conflicts - num_cooperators) ** self.p_value)
             if self.strategy == PersonStrategy.DEFECT:
                 current_strat_payoff = 1 / \
-                    ((num_conflicts - num_cooperators) ** 2)
+                    ((num_conflicts - num_cooperators) ** self.p_value)
                 opposite_strat_payoff = 0.0
         # Calculate probability of changing strategy
         current_strat_payoff = self.strategy_inertia * current_strat_payoff
