@@ -7,8 +7,8 @@ import random
 import threading
 
 # --- User parameters ---
-NUM_ITERATIONS = 10
-OUT_DIR = "out/attempt5"
+NUM_ITERATIONS = 1
+OUT_DIR = "out/batch1"
 FPS = 10
 SPAWN_PERCENT = 0.75
 FRAMES = False
@@ -16,14 +16,16 @@ VIDEO = False
 MAX_PARALLEL = 8
 PYTHON_EXEC = "python"  # path to python interpreter
 
-MOVEMENT = ["momentum", "static"]
-ENVIRONMENT = ["env5"]
+MOVEMENT = ["static"]
+ENVIRONMENT = ["env1"]
 COOPERATE_PERCENTS = ["0.5"]
-UPDATE_INTERVALS = ["5"]
-STRATEGY_INERTIA = ["2.0"]
+UPDATE_INTERVALS = ["10"]
+STRATEGY_INERTIA = ["0.1"]
+DEFECT_PUNISHMENT = ["2.0"]
+FAMILIARITY = 200
 
 jobs = list(product(
-    MOVEMENT, ENVIRONMENT, COOPERATE_PERCENTS, UPDATE_INTERVALS, STRATEGY_INERTIA, range(
+    MOVEMENT, ENVIRONMENT, COOPERATE_PERCENTS, UPDATE_INTERVALS, STRATEGY_INERTIA, DEFECT_PUNISHMENT, range(
         NUM_ITERATIONS)
 ))
 
@@ -33,12 +35,13 @@ completed = 0
 completed_lock = threading.Lock()  # Thread-safe counter
 
 
-def run_one_sim(movement: str, env: str, coop: str, update: str, inertia: str, iteration: int) -> float:
+def run_one_sim(movement: str, env: str, coop: str, update: str, inertia: str, defect_punishment: str, iteration: int) -> float:
     global completed, total_sims
 
     out_dir = os.path.join(
         OUT_DIR, movement, env, f"coop_{coop}",
-        f"update_{update}", f"strat_inertia_{inertia}", f"iter_{iteration}"
+        f"update_{update}", f"strat_inertia_{inertia}", f"defect_punishment_{defect_punishment}",
+        f"iter_{iteration}"
     )
 
     json_path = os.path.join(out_dir, "out.json")
@@ -60,11 +63,10 @@ def run_one_sim(movement: str, env: str, coop: str, update: str, inertia: str, i
         f"--cooperate_percent={coop}",
         f"--update_interval={update}",
         f"--strategy_inertia={inertia}",
+        f"--familiarity={FAMILIARITY}",
+        f"--p_value={defect_punishment}",
         f"--seed={random.randint(0, 1_000_000)}"
     ]
-
-    if env.endswith("4") or env.endswith("5"):
-        cmd += [f"--familiarity=200"]
 
     if VIDEO:
         cmd += [
